@@ -8,5 +8,5 @@ using Terraria.ModLoader;
 namespace GridBlock;
 
 public class GridBlock : Mod {
-
+    
 }
