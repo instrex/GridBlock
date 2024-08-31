@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using GridBlock.Common.Costs;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using Terraria.DataStructures;
@@ -26,9 +27,20 @@ public class GridBlockMapLayer : ModMapLayer {
 
             var chunk = gridBlock.Chunks.GetById(i);
 
+            if (chunk.IsUnlocked)
+                continue;
+
+            var color = chunk.Group switch {
+                CostGroup.Beginner => Color.Green,
+                CostGroup.Common => Color.Yellow,
+                CostGroup.Advanced => Color.Orange,
+                CostGroup.Hardcore => Color.Red,
+                _ => Color.White
+            };
+
             context.Draw(pixel,
                 pos + new Vector2(2), 
-                chunk.Color * 0.25f,
+                color * 0.5f,
                 new SpriteFrame(1, 1, 0, 0), 
                 (gridBlock.Chunks.ChunkSize - 1f) * scale * 0.5f, (gridBlock.Chunks.ChunkSize - 1f) * scale * 0.5f, 
                 Alignment.TopLeft);
@@ -39,8 +51,6 @@ public class GridBlockMapLayer : ModMapLayer {
                 new SpriteFrame(1, 1, 0, 0),
                 scale * 0.5f, scale * 0.5f,
                 Alignment.Center);
-
-            Utils.DrawBorderString(Main.spriteBatch, chunk.UnlockCost.stack.ToString(),  Main.mapFullscreenPos, Color.White, 1f);
         }
     }
 }
