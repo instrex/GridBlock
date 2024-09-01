@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using GridBlock.Common.Costs;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using Terraria.GameInput;
 using Terraria.ID;
@@ -46,16 +47,18 @@ public class GridBlockWorld : ModSystem {
         var spawnDistX = Math.Abs(spawnChunkCoord.X - chunkCoord.X);
         var spawnDistY = Math.Abs(spawnChunkCoord.Y - chunkCoord.Y);
 
+        // clear 3x3 area around spawn point
         if (spawnDistX <= 1 && spawnDistY <= 1) {
             unlocked = true;
             return CostGroup.Beginner;
         }
 
+        // make sure dungeon chunks are accessible at all times
         if (!CheckRegionSafety(new(chunkCoord.X * map.ChunkSize, chunkCoord.Y * map.ChunkSize, map.ChunkSize, map.ChunkSize))) {
             return CostGroup.Common;
         }
 
-        // BEGINNER group: about 33% of the world horizontally and 45% vertically
+        // make 8x6 area around spawn slightly easier to unlock
         if (spawnDistX <= 4 && spawnDistY <= 3) {
             return CostGroup.Beginner;
         }
@@ -84,9 +87,9 @@ public class GridBlockWorld : ModSystem {
 
     void RegenerateChunks() {
         var pools = (new[] { CostGroup.Beginner, CostGroup.Common, CostGroup.Advanced, CostGroup.Hardcore })
-            .ToDictionary(k => k, v => CostPoolGenerator.GetPool(v));
+            .ToDictionary(k => k, CostPoolGenerator.GetPool);
 
-        Chunks = new GridMap2D<GridBlockChunk>(40, Main.maxTilesX, Main.maxTilesY);
+        Chunks = new GridMap2D<GridBlockChunk>(20, Main.maxTilesX, Main.maxTilesY);
         Chunks.Fill((map, id) => {
             var group = CalculateGroup(map, id, out var unlocked);
             return new(id) { UnlockCost = pools[group].Get(), Group = group, IsUnlocked = unlocked };
@@ -96,5 +99,53 @@ public class GridBlockWorld : ModSystem {
     public override void PostUpdatePlayers() {
         if (PlayerInput.GetPressedKeys().Any(k => k == Microsoft.Xna.Framework.Input.Keys.G))
             RegenerateChunks();
+
+        
+    }
+
+    public override void UpdateUI(GameTime gameTime) {
+
+    }
+
+    public override void PostDrawTiles() {
+        var gridWorld = ModContent.GetInstance<GridBlockWorld>();
+        if (Main.LocalPlayer?.active != true || gridWorld.Chunks is null)
+            return;
+
+        Main.spriteBatch.Begin(SpriteSortMode.Deferred,
+            BlendState.AlphaBlend,
+            SamplerState.PointClamp,
+            DepthStencilState.None,
+            RasterizerState.CullNone,
+            null,
+            Main.GameViewMatrix.TransformationMatrix);
+
+        var currentChunkCoord = new Point((int)Main.LocalPlayer.Center.X / 16 / gridWorld.Chunks.ChunkSize,
+            (int)Main.LocalPlayer.Center.Y / 16 / gridWorld.Chunks.ChunkSize);
+
+        var currentChunk = gridWorld.Chunks.GetByChunkCoord(currentChunkCoord);
+
+        Utils.DrawBorderString(Main.spriteBatch, $"ID: {currentChunk.Id}\nCOORD: {currentChunkCoord}\nUNLOCK: {currentChunk.UnlockCost?.Name}", 
+            Main.LocalPlayer.Center + new Vector2(0, 32) - Main.screenPosition, Color.White);
+
+        var pixel = ModContent.Request<Texture2D>("GridBlock/Assets/Pixel").Value;
+
+        var radiusX = Main.screenWidth / 16 / gridWorld.Chunks.ChunkSize;
+        var radiusY = Main.screenHeight / 16 / gridWorld.Chunks.ChunkSize;
+
+        for (var x = -radiusX; x <= radiusX; x++) {
+            for (var y = -radiusY; y <= radiusY; y++) {
+                var nearbyChunkCoord = currentChunkCoord + new Point(x, y);
+                var nearbyChunk = gridWorld.Chunks.GetByChunkCoord(nearbyChunkCoord);
+                Main.spriteBatch.Draw(pixel, nearbyChunkCoord.ToVector2() * gridWorld.Chunks.ChunkSize * 16 - Main.screenPosition,
+                    null, (nearbyChunk.IsUnlocked ? Color.Green : Color.Red) * 0.5f, 0, Vector2.Zero, gridWorld.Chunks.ChunkSize * 16 / 2 - 2, 0, 0);
+            }
+        }
+
+        var topLeft = (Main.screenPosition - new Vector2(Main.screenWidth, Main.screenHeight) * 0.5f).ToTileCoordinates();
+
+        Main.spriteBatch.Draw(pixel, topLeft.ToWorldCoordinates(), null, Color.Green, 0, Vector2.Zero, 32, 0, 0);
+
+        Main.spriteBatch.End();
     }
 }

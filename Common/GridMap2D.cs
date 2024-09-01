@@ -20,13 +20,19 @@ public class GridMap2D<T>(int chunkSize, int worldBoundsX, int worldBoundsY) {
     public Point Bounds { get; } = new(worldBoundsX / chunkSize, worldBoundsY / chunkSize);
 
     // transform 2d index into 1d
-    int ToChunkId(Point chunkCoord) => chunkCoord.X % Bounds.X + chunkCoord.Y / Bounds.X;
+    int ToChunkId(Point chunkCoord) => chunkCoord.X + chunkCoord.Y * Bounds.X;
 
     /// <summary>
     /// Attempts to get a chunk by tile coordinates.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T GetByTileCoord(Point tileCoord) => GetById(ToChunkId(new(tileCoord.X / ChunkSize, tileCoord.Y / ChunkSize)));
+
+    /// <summary>
+    /// Attempts to get a chunk by tile coordinates.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public T GetByChunkCoord(Point chunkCoord) => GetById(ToChunkId(chunkCoord));
 
     /// <summary>
     /// Attempts to get a chunk by world coordinates.
