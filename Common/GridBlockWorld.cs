@@ -7,104 +7,74 @@ using GridBlock.Common.Costs;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
+using Terraria.Audio;
+using Terraria.GameContent;
 using Terraria.GameInput;
 using Terraria.ID;
 using Terraria.ModLoader;
+using Terraria.ModLoader.IO;
+using Terraria.UI;
 using Terraria.WorldBuilding;
 
 namespace GridBlock.Common;
 
 public class GridBlockWorld : ModSystem {
-    public const string SAVE_VERSION = "1";
+    public const string SAVE_VERSION = "test-1";
 
-    static readonly HashSet<int> SafetyTileExclusionSet = [
+    /// <summary>
+    /// Tiles that contribute to "no surprise" status of the chunk.
+    /// </summary>
+    public static readonly HashSet<int> SafetyTileExclusionSet = [
         TileID.BlueDungeonBrick,
         TileID.GreenDungeonBrick,
         TileID.PinkDungeonBrick,
         TileID.LihzahrdBrick,
-        TileID.LihzahrdAltar,
-        TileID.Hive
+        TileID.LihzahrdAltar
     ];
 
     // world-specific variables
     public GridMap2D<GridBlockChunk> Chunks { get; private set; }
     public string WorldVersion { get; private set; }
+    public int GridSeed { get; private set; }
 
     public override void PostWorldGen() {
+        GridSeed = WorldGen.genRand.Next();
         WorldVersion = SAVE_VERSION;
         RegenerateChunks();
     }
 
-    static CostGroup CalculateGroup(GridMap2D<GridBlockChunk> map, int id, out bool unlocked) {
-        var chunkCoord = new Point(id % map.Bounds.X, id / map.Bounds.X);
-        var normalizedCoord = new Vector2(chunkCoord.X / (float)map.Bounds.X, chunkCoord.Y / (float)map.Bounds.Y);
-        var dist = MathF.Abs((normalizedCoord.X - 0.5f) / 0.5f);
-        unlocked = false;
-
-        // unlock small area
-        var spawnChunkCoord = new Point(Main.spawnTileX / map.ChunkSize, Main.spawnTileY / map.ChunkSize);
-
-        var spawnDistX = Math.Abs(spawnChunkCoord.X - chunkCoord.X);
-        var spawnDistY = Math.Abs(spawnChunkCoord.Y - chunkCoord.Y);
-
-        // clear 3x3 area around spawn point
-        if (spawnDistX <= 1 && spawnDistY <= 1) {
-            unlocked = true;
-            return CostGroup.Beginner;
-        }
-
-        // make sure dungeon chunks are accessible at all times
-        if (!CheckRegionSafety(new(chunkCoord.X * map.ChunkSize, chunkCoord.Y * map.ChunkSize, map.ChunkSize, map.ChunkSize))) {
-            return CostGroup.Common;
-        }
-
-        // make 8x6 area around spawn slightly easier to unlock
-        if (spawnDistX <= 4 && spawnDistY <= 3) {
-            return CostGroup.Beginner;
-        }
-        
-        if (dist < 0.75f) {
-            return normalizedCoord.Y switch {
-                > 0.8f => CostGroup.Hardcore,
-                > 0.25f => CostGroup.Advanced,
-                _ => CostGroup.Common
-            };
-        }
-
-        return CostGroup.Hardcore;
-    }
-
-    static bool CheckRegionSafety(Rectangle rect) {
-        for (var x = rect.Left; x <= rect.Right; x++) {
-            for (var y = rect.Top; y <= rect.Bottom; y++) {
-                if (Framing.GetTileSafely(x, y) is { HasTile: true, TileType: var tileType} && SafetyTileExclusionSet.Contains(tileType))
-                    return false;
-            }
-        }
-
-        return true;
+    public override void OnWorldUnload() {
+        WorldVersion = "";
+        GridSeed = 0;
+        Chunks = null;
     }
 
     void RegenerateChunks() {
-        var pools = (new[] { CostGroup.Beginner, CostGroup.Common, CostGroup.Advanced, CostGroup.Hardcore })
-            .ToDictionary(k => k, CostPoolGenerator.GetPool);
+        List<GridBlockChunk> chunksToCollapseNeighboursFor = [];
 
-        Chunks = new GridMap2D<GridBlockChunk>(20, Main.maxTilesX, Main.maxTilesY);
+        Chunks = new GridMap2D<GridBlockChunk>(40, Main.maxTilesX, Main.maxTilesY);
         Chunks.Fill((map, id) => {
-            var group = CalculateGroup(map, id, out var unlocked);
-            return new(id) { UnlockCost = pools[group].Get(), Group = group, IsUnlocked = unlocked };
+            var group = GridBlockChunk.CalculateGroup(map, id, out var unlocked);
+
+            var chunk = new GridBlockChunk(id) { Group = group, IsUnlocked = unlocked };
+            if (unlocked) chunksToCollapseNeighboursFor.Add(chunk);
+
+            return chunk;
         });
+
+        chunksToCollapseNeighboursFor.ForEach(c => c.CollapseNeighboursUnlockCost());
     }
 
     public override void PostUpdatePlayers() {
         if (PlayerInput.GetPressedKeys().Any(k => k == Microsoft.Xna.Framework.Input.Keys.G))
             RegenerateChunks();
 
-        
-    }
-
-    public override void UpdateUI(GameTime gameTime) {
-
+        if (Chunks != null && PlayerInput.GetPressedKeys().Any(k => k == Microsoft.Xna.Framework.Input.Keys.F)) {
+            var chunk = Chunks.GetByWorldPos(Main.MouseWorld);
+            if (chunk.IsUnlocked = !chunk.IsUnlocked) {
+                chunk.CollapseNeighboursUnlockCost();
+            }
+        }
     }
 
     public override void PostDrawTiles() {
@@ -114,14 +84,14 @@ public class GridBlockWorld : ModSystem {
 
         Main.spriteBatch.Begin(SpriteSortMode.Deferred,
             BlendState.AlphaBlend,
-            SamplerState.PointClamp,
+            SamplerState.LinearWrap,
             DepthStencilState.None,
             RasterizerState.CullNone,
             null,
             Main.GameViewMatrix.TransformationMatrix);
 
-        var currentChunkCoord = new Point((int)Main.LocalPlayer.Center.X / 16 / gridWorld.Chunks.ChunkSize,
-            (int)Main.LocalPlayer.Center.Y / 16 / gridWorld.Chunks.ChunkSize);
+        var currentChunkCoord = new Point((int)Main.LocalPlayer.Center.X / 16 / gridWorld.Chunks.CellSize,
+            (int)Main.LocalPlayer.Center.Y / 16 / gridWorld.Chunks.CellSize);
 
         var currentChunk = gridWorld.Chunks.GetByChunkCoord(currentChunkCoord);
 
@@ -130,15 +100,67 @@ public class GridBlockWorld : ModSystem {
 
         var pixel = ModContent.Request<Texture2D>("GridBlock/Assets/Pixel").Value;
 
-        var radiusX = Main.screenWidth / 16 / gridWorld.Chunks.ChunkSize;
-        var radiusY = Main.screenHeight / 16 / gridWorld.Chunks.ChunkSize;
+        var radiusX = Main.screenWidth / 16 / gridWorld.Chunks.CellSize;
+        var radiusY = Main.screenHeight / 16 / gridWorld.Chunks.CellSize;
 
         for (var x = -radiusX; x <= radiusX; x++) {
             for (var y = -radiusY; y <= radiusY; y++) {
                 var nearbyChunkCoord = currentChunkCoord + new Point(x, y);
                 var nearbyChunk = gridWorld.Chunks.GetByChunkCoord(nearbyChunkCoord);
-                Main.spriteBatch.Draw(pixel, nearbyChunkCoord.ToVector2() * gridWorld.Chunks.ChunkSize * 16 - Main.screenPosition,
-                    null, (nearbyChunk.IsUnlocked ? Color.Green : Color.Red) * 0.5f, 0, Vector2.Zero, gridWorld.Chunks.ChunkSize * 16 / 2 - 2, 0, 0);
+
+                if (nearbyChunk is null || nearbyChunk.IsUnlocked)
+                    continue;
+
+                var worldPos = nearbyChunkCoord.ToVector2() * gridWorld.Chunks.CellSize * 16;
+                var worldBounds = new Rectangle((int)worldPos.X, (int)worldPos.Y,
+                    gridWorld.Chunks.CellSize * 16, gridWorld.Chunks.CellSize * 16);
+
+                Main.spriteBatch.Draw(pixel, worldPos - Main.screenPosition,
+                    null, (nearbyChunk.IsUnlocked ? Color.Green : Color.DarkRed) * 0.5f, 0, Vector2.Zero, gridWorld.Chunks.CellSize * 16 / 2 - 2, 0, 0);
+
+                if (nearbyChunk.IsUnlockCostCollapsed && nearbyChunk.UnlockCost != null) {
+                    var screenBounds = new Rectangle((int)Main.screenPosition.X, (int)Main.screenPosition.Y,
+                        Main.screenWidth, Main.screenHeight);
+
+                    screenBounds.Inflate(-64, -72);
+
+                    var itemIconPos = worldPos + new Vector2(gridWorld.Chunks.CellSize * 16 * 0.5f);
+
+                    if (!screenBounds.Contains(itemIconPos.ToPoint())) {
+                        itemIconPos.X = Math.Clamp(itemIconPos.X, 
+                            MathF.Min(screenBounds.Left, worldBounds.Right - 64), 
+                            MathF.Max(screenBounds.Right, worldBounds.Left + 64));
+
+                        itemIconPos.Y = Math.Clamp(itemIconPos.Y, 
+                            MathF.Min(screenBounds.Top, worldBounds.Bottom - 76), 
+                            MathF.Max(screenBounds.Bottom, worldBounds.Top + 32));
+                    }
+
+                    var item = nearbyChunk.UnlockCost;
+                    var playerHasItem = Main.LocalPlayer.CountItem(item.type, item.stack) >= item.stack;
+                    var textColor = playerHasItem ? Color.White : Color.Lerp(Color.Gray, Color.Red, 0.25f + MathF.Sin(Main.GlobalTimeWrappedHourly * 4) * 0.125f);
+                    Utils.DrawBorderString(Main.spriteBatch, Lang.GetItemNameValue(nearbyChunk.UnlockCost.type),
+                            itemIconPos + new Vector2(0, 24) - Main.screenPosition, textColor, 1, 0.5f);
+
+                    ItemSlot.Draw(Main.spriteBatch, ref item, ItemSlot.Context.CreativeInfinite, 
+                        itemIconPos + new Vector2(-16) - Main.screenPosition, playerHasItem ? Color.White : Color.Gray);
+
+                    if (playerHasItem && worldBounds.Contains(Main.MouseWorld.ToPoint()) && Main.mouseLeft && Main.mouseLeftRelease) {
+                        for (var i = 0; i < item.stack; i++) Main.LocalPlayer.ConsumeItem(item.type);
+                        Main.isMouseLeftConsumedByUI = true;
+                        Main.blockMouse = true;
+                        SoundEngine.PlaySound(SoundID.Unlock);
+
+                        // TODO: unlock chunks more elegantly
+                        nearbyChunk.CollapseNeighboursUnlockCost();
+                        nearbyChunk.IsUnlocked = true;
+                    }
+
+                    if (nearbyChunk.UnlockCost.stack != 1) {
+                        Utils.DrawBorderString(Main.spriteBatch, $"x{nearbyChunk.UnlockCost.stack}",
+                            itemIconPos + new Vector2(0, 42) - Main.screenPosition, textColor, 1, 0.5f);
+                    }
+                }    
             }
         }
 
@@ -147,5 +169,73 @@ public class GridBlockWorld : ModSystem {
         Main.spriteBatch.Draw(pixel, topLeft.ToWorldCoordinates(), null, Color.Green, 0, Vector2.Zero, 32, 0, 0);
 
         Main.spriteBatch.End();
+    }
+
+    public override void SaveWorldData(TagCompound tag) {
+        tag["GridVersion"] = WorldVersion;
+        tag["GridSeed"] = GridSeed;
+
+        List<TagCompound> savedChunks = [];
+        for (var id = 0; id < Chunks.Length; id++) {
+            var chunk = Chunks.GetById(id);
+            if (!chunk.ShouldBeSaved) 
+                continue;
+
+            var chunkTag = new TagCompound { ["ChunkId"] = id };
+            savedChunks.Add(chunkTag);
+
+            if (chunk.IsUnlocked) {
+                // if it's unlocked, no other information is required
+                chunkTag[nameof(GridBlockChunk.IsUnlocked)] = true;
+                continue;
+            }
+
+            if (chunk.IsUnlockCostCollapsed) {
+                if (chunk.UnlockCost is null) {
+                    ModContent.GetInstance<GridBlock>().Logger.Warn("Attempted to save a chunk with collapsed unlock cost but no item instance? Weird...");
+                }
+
+                chunkTag[nameof(GridBlockChunk.IsUnlockCostCollapsed)] = true;
+                chunkTag[nameof(GridBlockChunk.UnlockCost)] = chunk.UnlockCost;
+            }
+        }
+
+        tag["GridChunks"] = savedChunks;
+    }
+
+    public override void LoadWorldData(TagCompound tag) {
+        // create determenistic chunks
+        RegenerateChunks();
+
+        try {
+            WorldVersion = tag.Get<string>("GridVersion");
+            GridSeed = tag.Get<int>("GridSeed");
+
+            foreach (var chunkTag in tag.Get<List<TagCompound>>("GridChunks")) {
+                var id = chunkTag.Get<int>("ChunkId");
+
+                if (Chunks.GetById(id) is not GridBlockChunk chunk) {
+                    Mod.Logger.Warn($"Attempted to set non-existent chunk during loading. (Id: {id})");
+                    continue;
+                }
+
+                // unlock the chunk if its set as unlocked
+                if (chunkTag.ContainsKey(nameof(GridBlockChunk.IsUnlocked))) {
+                    chunk.IsUnlocked = true;
+                    continue;
+                }
+
+                // set collapsed unlock
+                if (chunkTag.ContainsKey(nameof(GridBlockChunk.IsUnlockCostCollapsed))) {
+                    var item = chunkTag.Get<Item>(nameof(GridBlockChunk.UnlockCost));
+                    chunk.IsUnlockCostCollapsed = true;
+                    chunk.UnlockCost = item;
+                    continue;
+                }
+            }
+        } catch (Exception ex) {
+            Mod.Logger.Error("Error during loading GridBlock data!");
+            Mod.Logger.Error(ex);
+        }
     }
 }

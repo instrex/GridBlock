@@ -6,8 +6,8 @@ using Terraria.Utilities;
 namespace GridBlock.Common.Costs;
 
 public static class CostPoolGenerator {
-    public static WeightedRandom<Item> GetPool(CostGroup group) {
-        var rng = new WeightedRandom<Item>();
+    public static WeightedRandom<Item> GetPool(CostGroup group, int? seed = default) {
+        var rng = new WeightedRandom<Item>(seed ?? Main.rand.Next());
         
         switch (group) {
             default:
@@ -16,22 +16,23 @@ public static class CostPoolGenerator {
 
             case CostGroup.Beginner:
                 rng.Add(new(WorldGen.SavedOreTiers.Iron == TileID.Iron ? ItemID.IronOre : ItemID.LeadOre, 5));
-                rng.Add(new(ItemID.Mushroom, 5));
-                rng.Add(new(ItemID.Mushroom, 10), 0.5f);
+                rng.Add(new(ItemID.Mushroom, 5), 0.5);
+                rng.Add(new(ItemID.Mushroom, 10), 0.25f);
                 rng.Add(new(ItemID.Gel, 5));
                 rng.Add(new(ItemID.Gel, 10), 0.5);
                 rng.Add(new(ItemID.Gel, 15), 0.25);
+                rng.Add(new(ItemID.Acorn, 2));
                 rng.Add(new(ItemID.Wood, 15));
                 rng.Add(new(ItemID.Wood, 30), 0.5);
                 rng.Add(new(ItemID.StoneBlock, 15));
                 rng.Add(new(ItemID.StoneBlock, 30), 0.5);
-                rng.Add(new(ItemID.GoldCoin, 1));
+                rng.Add(new(ItemID.SilverCoin, 10));
                 break;
 
             case CostGroup.Common:
                 rng.Add(new(ItemID.Wood, 15));
-                rng.Add(new(ItemID.RichMahogany, 15));
-                rng.Add(new(ItemID.PalmWood, 15));
+                rng.Add(new(ItemID.RichMahogany, 15), 0.5);
+                rng.Add(new(ItemID.PalmWood, 15), 0.5);
                 rng.Add(new(ItemID.Torch, 20));
                 rng.Add(new(ItemID.Torch, 40), 0.25);
                 rng.Add(new(ItemID.Daybloom, 5));
@@ -60,15 +61,15 @@ public static class CostPoolGenerator {
                 break;
 
             case CostGroup.Advanced:
-                rng.Add(new(ItemID.JungleSpores, 5));
-                rng.Add(new(ItemID.Vine, 5));
-                rng.Add(new(ItemID.Stinger, 10));
+                rng.Add(new(ItemID.JungleSpores, 5), 0.5);
+                rng.Add(new(ItemID.Vine, 5), 0.5);
+                rng.Add(new(ItemID.Stinger, 10), 0.5);
                 rng.Add(new(ItemID.Amethyst, 5));
                 rng.Add(new(ItemID.Sapphire, 5));
                 rng.Add(new(ItemID.Emerald, 5));
                 rng.Add(new(ItemID.Ruby, 5));
-                rng.Add(new(ItemID.Diamond, 1));
-                rng.Add(new(ItemID.Amber, 1));
+                rng.Add(new(ItemID.Diamond, 1), 0.5);
+                rng.Add(new(ItemID.Amber, 1), 0.5);
                 rng.Add(new(WorldGen.SavedOreTiers.Iron == TileID.Iron ? ItemID.IronBar : ItemID.LeadBar, 5));
                 rng.Add(new(WorldGen.SavedOreTiers.Silver == TileID.Silver ? ItemID.SilverBar : ItemID.TungstenBar, 5));
                 rng.Add(new(WorldGen.SavedOreTiers.Gold == TileID.Gold ? ItemID.GoldBar : ItemID.PlatinumBar, 5));

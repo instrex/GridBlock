@@ -15,7 +15,7 @@ public class GridBlockPlayer : ModPlayer {
     public override bool CanUseItem(Item item) {
         // allow usage of RoD and pickaxes only inside unlocked chunks
         if (ModContent.GetInstance<GridBlockWorld>().Chunks?.GetByWorldPos(Main.MouseWorld) is GridBlockChunk chunk &&
-            (item.type is ItemID.RodofDiscord or ItemID.RodOfHarmony || item.pick > 0)) {
+            (item.type is ItemID.RodofDiscord or ItemID.RodOfHarmony || item.pick > 0 || item.createTile != -1)) {
             return chunk.IsUnlocked;
         }
 
@@ -87,7 +87,8 @@ public class GridBlockPlayer : ModPlayer {
             Player.position.X = worldBounds.Left - Player.width;
             Player.velocity.X *= -1;
 
-            SoundEngine.PlaySound(SoundID.Item56 with { PitchVariance = 1 }, Player.Center);
+            if (MathF.Abs(Player.velocity.X) > 2f)
+                SoundEngine.PlaySound(SoundID.Item56 with { PitchVariance = 1 }, Player.Center);
 
             // Main.NewText("X RIGHT");
         }
@@ -97,7 +98,10 @@ public class GridBlockPlayer : ModPlayer {
             Player.position.X = worldBounds.Right;
             Player.velocity.X *= -1;
 
-            SoundEngine.PlaySound(SoundID.Item56 with { PitchVariance = 1 }, Player.Center);
+            if (MathF.Abs(Player.velocity.X) > 2f) 
+                SoundEngine.PlaySound(SoundID.Item56 with { PitchVariance = 1 }, Player.Center);
+            
+            
 
             // Main.NewText("X LEFT");
         }

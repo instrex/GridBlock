@@ -12,21 +12,30 @@ public class GridMap2D<T>(int chunkSize, int worldBoundsX, int worldBoundsY) {
     /// <summary>
     /// Size of each chunk on this map.
     /// </summary>
-    public int ChunkSize { get; } = chunkSize;
+    public int CellSize { get; } = chunkSize;
+
+    /// <summary>
+    /// Gets total number of values.
+    /// </summary>
+    public int Length => _values.Length;
 
     /// <summary>
     /// Size of the whole map (in chunk space).
     /// </summary>
     public Point Bounds { get; } = new(worldBoundsX / chunkSize, worldBoundsY / chunkSize);
 
-    // transform 2d index into 1d
-    int ToChunkId(Point chunkCoord) => chunkCoord.X + chunkCoord.Y * Bounds.X;
+    /// <summary>
+    /// Transform a 2d index into 1d Id.
+    /// </summary>
+    public int ToChunkId(Point chunkCoord) => chunkCoord.X + chunkCoord.Y * Bounds.X;
+
+    public Point ToChunkCoord(int id) => new(id % Bounds.X, id / Bounds.X);
 
     /// <summary>
     /// Attempts to get a chunk by tile coordinates.
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public T GetByTileCoord(Point tileCoord) => GetById(ToChunkId(new(tileCoord.X / ChunkSize, tileCoord.Y / ChunkSize)));
+    public T GetByTileCoord(Point tileCoord) => GetById(ToChunkId(new(tileCoord.X / CellSize, tileCoord.Y / CellSize)));
 
     /// <summary>
     /// Attempts to get a chunk by tile coordinates.
