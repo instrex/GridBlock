@@ -17,7 +17,7 @@ public class GridBlockMapLayer : ModMapLayer {
         if (gridBlock.Chunks is null)
             return;
 
-        var scale = Main.mapFullscreen ? Main.mapFullscreenScale : 0f;
+        var scale = Main.mapFullscreen ? Main.mapFullscreenScale : 4f;
 
         var pixel = ModContent.Request<Texture2D>("GridBlock/Assets/Pixel").Value;
 
@@ -38,13 +38,21 @@ public class GridBlockMapLayer : ModMapLayer {
                 _ => Color.White
             };
 
-            context.Draw(pixel,
-                pos + new Vector2(2), 
-                color * 0.5f,
-                new SpriteFrame(1, 1, 0, 0), 
-                (gridBlock.Chunks.CellSize - 1f) * scale * 0.5f, (gridBlock.Chunks.CellSize - 1f) * scale * 0.5f, 
-                Alignment.TopLeft);
-
+            if (Main.mapFullscreen) {
+                context.Draw(pixel,
+                    pos + new Vector2(2),
+                    color * 0.5f,
+                    new SpriteFrame(1, 1, 0, 0),
+                    (gridBlock.Chunks.CellSize - 1f) * scale * 0.5f, (gridBlock.Chunks.CellSize - 1f) * scale * 0.5f,
+                    Alignment.TopLeft);
+            } else {
+                context.Draw(pixel,
+                    pos + new Vector2(gridBlock.Chunks.CellSize * 0.5f),
+                    color * 0.5f,
+                    new SpriteFrame(1, 1, 0, 0),
+                    scale * 9f, scale * 9f,
+                    Alignment.Center);
+            }
 
             if (chunk.UnlockCost != null) {
                 context.Draw(TextureAssets.Item[chunk.UnlockCost.type].Value,

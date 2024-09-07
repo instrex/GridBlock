@@ -95,8 +95,8 @@ public class GridBlockWorld : ModSystem {
 
         var currentChunk = gridWorld.Chunks.GetByChunkCoord(currentChunkCoord);
 
-        Utils.DrawBorderString(Main.spriteBatch, $"ID: {currentChunk.Id}\nCOORD: {currentChunkCoord}\nUNLOCK: {currentChunk.UnlockCost?.Name}", 
-            Main.LocalPlayer.Center + new Vector2(0, 32) - Main.screenPosition, Color.White);
+        //Utils.DrawBorderString(Main.spriteBatch, $"ID: {currentChunk.Id}\nCOORD: {currentChunkCoord}\nUNLOCK: {currentChunk.UnlockCost?.Name}", 
+        //    Main.LocalPlayer.Center + new Vector2(0, 32) - Main.screenPosition, Color.White);
 
         var pixel = ModContent.Request<Texture2D>("GridBlock/Assets/Pixel").Value;
 
@@ -233,6 +233,7 @@ public class GridBlockWorld : ModSystem {
                     continue;
                 }
             }
+
         } catch (Exception ex) {
             Mod.Logger.Error("Error during loading GridBlock data!");
             Mod.Logger.Error(ex);
