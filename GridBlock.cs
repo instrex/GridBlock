@@ -55,6 +55,7 @@ public class GridBlock : Mod {
 
                         // fun
                         position = coord.ToWorldCoordinates(16, 16);
+                        break;
                     }
                 }
         }

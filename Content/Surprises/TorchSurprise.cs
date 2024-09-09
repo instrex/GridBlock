@@ -1,0 +1,45 @@
+﻿using GridBlock.Common.Surprises;
+using Microsoft.Xna.Framework;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Terraria;
+using Terraria.Audio;
+using Terraria.ID;
+using Terraria.ModLoader;
+using Terraria.Utilities;
+
+namespace GridBlock.Content.Surprises;
+
+public class TorchSurprise : GridBlockSurprise.ProjectileSpawner<TorchSurpriseProjectile> { }
+public class TorchSurpriseProjectile : TilePlaceSurpriseProjectile {
+    public override void SetDefaults() {
+        base.SetDefaults();
+
+        Projectile.timeLeft = 60;
+        TileType = TileID.Torches;
+    }
+}
+
+
+public class HealingSurprise : GridBlockSurprise.ProjectileSpawner<HealingSurpriseProjectile> { }
+public class HealingSurpriseProjectile : ItemShowerSurpriseProjectile {
+    public override void SetDefaults() {
+        base.SetDefaults();
+
+        Projectile.timeLeft = Main.rand.Next(10, 20) * 5;
+        ItemType = ItemID.Heart;
+        SpawnInterval = 5;
+    }
+
+    public override void OnItemSpawned(Item item) {
+        SoundEngine.PlaySound(SoundID.Item9);
+        for (var i = 0; i < 7; i++) {
+            var dust = Dust.NewDustDirect(item.position, 32, 32, DustID.GemRuby, Main.rand.NextFloat(-3, 3), Main.rand.NextFloat(-3, 3));
+            dust.noGravity = true;
+            dust.fadeIn = 1.5f;
+        }
+    }
+}

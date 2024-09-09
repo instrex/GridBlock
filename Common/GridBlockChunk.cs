@@ -89,6 +89,20 @@ public class GridBlockChunk(int Id) {
     }
 
     /// <summary>
+    /// Returns this chunk's location in tile-space.
+    /// </summary>
+    public Point TileCoord {
+        get {
+            var chunkCoord = GridBlockWorld.Instance.Chunks.ToChunkCoord(Id);
+            var size = GridBlockWorld.Instance.Chunks.CellSize;
+            return new(chunkCoord.X * size, chunkCoord.Y * size);
+        }
+    }
+
+    public Point ChunkCoord => GridBlockWorld.Instance.Chunks.ToChunkCoord(Id);
+    public Vector2 WorldCoordTopLeft => TileCoord.ToWorldCoordinates(0, 0);
+
+    /// <summary>
     /// Calculate CostGroup for a given chunk.
     /// </summary>
     public static CostGroup CalculateGroup(GridMap2D<GridBlockChunk> map, int id, out bool unlocked) {

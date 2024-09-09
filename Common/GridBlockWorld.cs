@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GridBlock.Common.Costs;
+using GridBlock.Content.Surprises;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
@@ -31,6 +32,8 @@ public class GridBlockWorld : ModSystem {
         TileID.LihzahrdBrick,
         TileID.LihzahrdAltar
     ];
+
+    public static GridBlockWorld Instance => ModContent.GetInstance<GridBlockWorld>();
 
     // world-specific variables
     public GridMap2D<GridBlockChunk> Chunks { get; private set; }
@@ -95,9 +98,6 @@ public class GridBlockWorld : ModSystem {
 
         var currentChunk = gridWorld.Chunks.GetByChunkCoord(currentChunkCoord);
 
-        //Utils.DrawBorderString(Main.spriteBatch, $"ID: {currentChunk.Id}\nCOORD: {currentChunkCoord}\nUNLOCK: {currentChunk.UnlockCost?.Name}", 
-        //    Main.LocalPlayer.Center + new Vector2(0, 32) - Main.screenPosition, Color.White);
-
         var pixel = ModContent.Request<Texture2D>("GridBlock/Assets/Pixel").Value;
 
         var radiusX = Main.screenWidth / 16 / gridWorld.Chunks.CellSize;
@@ -147,13 +147,20 @@ public class GridBlockWorld : ModSystem {
 
                     if (playerHasItem && worldBounds.Contains(Main.MouseWorld.ToPoint()) && Main.mouseLeft && Main.mouseLeftRelease) {
                         for (var i = 0; i < item.stack; i++) Main.LocalPlayer.ConsumeItem(item.type);
-                        Main.isMouseLeftConsumedByUI = true;
-                        Main.blockMouse = true;
                         SoundEngine.PlaySound(SoundID.Unlock);
 
                         // TODO: unlock chunks more elegantly
                         nearbyChunk.CollapseNeighboursUnlockCost();
                         nearbyChunk.IsUnlocked = true;
+
+                        // fun!
+                        // CombatText.NewText(new((int)itemIconPos.X - 16, (int)itemIconPos.Y + 16, 32, 32), Color.Gold, "ДА БУДЕТ СВЕТ!", true);
+                        //CombatText.NewText(new((int)itemIconPos.X - 16, (int)itemIconPos.Y + 16, 32, 32), Color.Red, "Липкая ситуация...", true);
+                        CombatText.NewText(new((int)itemIconPos.X - 16, (int)itemIconPos.Y + 16, 32, 32), Color.Red, "Упс!  Пол изменился!", true);
+                        //CombatText.NewText(new((int)itemIconPos.X - 16, (int)itemIconPos.Y + 16, 32, 32), Color.Red, "Гости из будущего...", true);
+                        //CombatText.NewText(new((int)itemIconPos.X - 16, (int)itemIconPos.Y + 16, 32, 32), Color.Gold, "Награда за смелость!", true);
+                        //CombatText.NewText(new((int)itemIconPos.X - 16, (int)itemIconPos.Y + 16, 32, 32), Color.Gold, "Хилимся-живём!", true);
+                        ModContent.GetInstance<GenderSwapSurprise>().Trigger(Main.LocalPlayer, nearbyChunk);
                     }
 
                     if (nearbyChunk.UnlockCost.stack != 1) {
@@ -235,7 +242,7 @@ public class GridBlockWorld : ModSystem {
             }
 
         } catch (Exception ex) {
-            Mod.Logger.Error("Error during loading GridBlock data!");
+            Mod.Logger.Error("Error loading GridBlock data!");
             Mod.Logger.Error(ex);
         }
     }

@@ -1,1 +1,7 @@
-
+Projectiles: {
+	TorchSurpriseProjectile.DisplayName: Torch Surprise Projectile
+	SlimeSurpriseProjectile.DisplayName: Slime Surprise Projectile
+	LifeCrystalSurpriseProjectile.DisplayName: Life Crystal Surprise Projectile
+	RewardSurpriseProjectile.DisplayName: Reward Surprise Projectile
+	HealingSurpriseProjectile.DisplayName: Healing Surprise Projectile
+}
