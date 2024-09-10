@@ -15,6 +15,7 @@ using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 using Terraria.UI;
+using Terraria.Utilities;
 using Terraria.WorldBuilding;
 
 namespace GridBlock.Common;
@@ -55,12 +56,17 @@ public class GridBlockWorld : ModSystem {
     void RegenerateChunks() {
         List<GridBlockChunk> chunksToCollapseNeighboursFor = [];
 
+        var chunkRng = new UnifiedRandom(GridSeed);
+
         Chunks = new GridMap2D<GridBlockChunk>(40, Main.maxTilesX, Main.maxTilesY);
         Chunks.Fill((map, id) => {
-            var group = GridBlockChunk.CalculateGroup(map, id, out var unlocked);
+            var group = GridBlockChunk.CalculateGroup(map, chunkRng, id, out var unlocked);
 
             var chunk = new GridBlockChunk(id) { Group = group, IsUnlocked = unlocked };
             if (unlocked) chunksToCollapseNeighboursFor.Add(chunk);
+
+            if (chunk.Group == CostGroup.Expensive) 
+                chunk.CollapseUnlockCost();
 
             return chunk;
         });
@@ -145,22 +151,37 @@ public class GridBlockWorld : ModSystem {
                     ItemSlot.Draw(Main.spriteBatch, ref item, ItemSlot.Context.CreativeInfinite, 
                         itemIconPos + new Vector2(-16) - Main.screenPosition, playerHasItem ? Color.White : Color.Gray);
 
+                    // update cost in real-time and draw special reward indicator
+                    if (nearbyChunk.Group == CostGroup.Expensive) {
+                        nearbyChunk.UnlockCost.stack = Main.hardMode ? 50 : 10;
+
+                        var rewardTex = ModContent.Request<Texture2D>("GridBlock/Assets/RewardIndicator");
+                        var rewardPos = itemIconPos + new Vector2(0, 82) - Main.screenPosition;
+
+                        for (var i = 0; i < 4; i++) {
+                            Main.spriteBatch.Draw(rewardTex.Value, rewardPos
+                                + (i * MathHelper.PiOver2 + Main.GlobalTimeWrappedHourly).ToRotationVector2() 
+                                * (4 + 2 * MathF.Sin(Main.GlobalTimeWrappedHourly * 6)),
+                                null, Color.Gold with { A = 0 } * 0.25f, 0, rewardTex.Size() * 0.5f, 1f, 0, 0);
+                        }
+
+                        Main.spriteBatch.Draw(rewardTex.Value, rewardPos, null, Color.White, 0, rewardTex.Size() * 0.5f, 1f, 0, 0);
+                    }
+
                     if (playerHasItem && worldBounds.Contains(Main.MouseWorld.ToPoint()) && Main.mouseLeft && Main.mouseLeftRelease) {
-                        for (var i = 0; i < item.stack; i++) Main.LocalPlayer.ConsumeItem(item.type);
-                        SoundEngine.PlaySound(SoundID.Unlock);
+                        nearbyChunk.Unlock(Main.LocalPlayer);
 
                         // TODO: unlock chunks more elegantly
-                        nearbyChunk.CollapseNeighboursUnlockCost();
-                        nearbyChunk.IsUnlocked = true;
+                        
 
                         // fun!
                         // CombatText.NewText(new((int)itemIconPos.X - 16, (int)itemIconPos.Y + 16, 32, 32), Color.Gold, "ДА БУДЕТ СВЕТ!", true);
                         //CombatText.NewText(new((int)itemIconPos.X - 16, (int)itemIconPos.Y + 16, 32, 32), Color.Red, "Липкая ситуация...", true);
-                        CombatText.NewText(new((int)itemIconPos.X - 16, (int)itemIconPos.Y + 16, 32, 32), Color.Red, "Упс!  Пол изменился!", true);
+                        // CombatText.NewText(new((int)itemIconPos.X - 16, (int)itemIconPos.Y + 16, 32, 32), Color.Red, "Упс!  Пол изменился!", true);
                         //CombatText.NewText(new((int)itemIconPos.X - 16, (int)itemIconPos.Y + 16, 32, 32), Color.Red, "Гости из будущего...", true);
                         //CombatText.NewText(new((int)itemIconPos.X - 16, (int)itemIconPos.Y + 16, 32, 32), Color.Gold, "Награда за смелость!", true);
                         //CombatText.NewText(new((int)itemIconPos.X - 16, (int)itemIconPos.Y + 16, 32, 32), Color.Gold, "Хилимся-живём!", true);
-                        ModContent.GetInstance<GenderSwapSurprise>().Trigger(Main.LocalPlayer, nearbyChunk);
+                        // ModContent.GetInstance<GenderSwapSurprise>().Trigger(Main.LocalPlayer, nearbyChunk);
                     }
 
                     if (nearbyChunk.UnlockCost.stack != 1) {

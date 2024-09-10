@@ -1,10 +1,16 @@
 ﻿using GridBlock.Common.Costs;
+using GridBlock.Common.Surprises;
+using GridBlock.Content.Surprises;
 using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Terraria;
+using Terraria.Audio;
+using Terraria.ID;
+using Terraria.Localization;
 using Terraria.ModLoader;
+using Terraria.Utilities;
 
 namespace GridBlock.Common;
 
@@ -47,6 +53,9 @@ public class GridBlockChunk(int Id) {
     /// </summary>
     public bool ShouldBeSaved => IsUnlocked || IsUnlockCostCollapsed;
 
+    /// <summary>
+    /// Collapse unlock cost for this chunk.
+    /// </summary>
     public void CollapseUnlockCost() {
         if (IsUnlocked || IsUnlockCostCollapsed)
             return;
@@ -67,6 +76,9 @@ public class GridBlockChunk(int Id) {
 
         // adjust weights so that items are duplicated less
         foreach (var neighbour in neighbours.Where(n => n != null && n.IsUnlockCostCollapsed && n.UnlockCost != null)) {
+            if (pool.elements.Count <= 1)
+                break;
+
             pool.elements.RemoveAll(p => p.Item1.type == neighbour.UnlockCost.type);
         }
 
@@ -75,6 +87,9 @@ public class GridBlockChunk(int Id) {
         UnlockCost = pool.Get();
     }
 
+    /// <summary>
+    /// Collapse neighbours unlock costs.
+    /// </summary>
     public void CollapseNeighboursUnlockCost() {
         var gridWorld = ModContent.GetInstance<GridBlockWorld>();
         for (var i = -1; i < 2; i++) {
@@ -83,7 +98,7 @@ public class GridBlockChunk(int Id) {
                     continue;
 
                 var coord = gridWorld.Chunks.ToChunkCoord(Id);
-                gridWorld.Chunks.GetByChunkCoord(coord + new Point(i, k)).CollapseUnlockCost();
+                gridWorld.Chunks.GetByChunkCoord(coord + new Point(i, k))?.CollapseUnlockCost();
             }
         }
     }
@@ -105,7 +120,7 @@ public class GridBlockChunk(int Id) {
     /// <summary>
     /// Calculate CostGroup for a given chunk.
     /// </summary>
-    public static CostGroup CalculateGroup(GridMap2D<GridBlockChunk> map, int id, out bool unlocked) {
+    public static CostGroup CalculateGroup(GridMap2D<GridBlockChunk> map, UnifiedRandom gridRng, int id, out bool unlocked) {
         static bool CheckRegionSafety(Rectangle rect) {
             for (var x = rect.Left; x <= rect.Right; x++) {
                 for (var y = rect.Top; y <= rect.Bottom; y++) {
@@ -149,6 +164,10 @@ public class GridBlockChunk(int Id) {
             return CostGroup.Common;
         }
 
+        if (gridRng.NextFloat() < 0.05f) {
+            return CostGroup.Expensive;
+        }
+
         if (dist < 0.75f) {
             return normalizedCoord.Y switch {
                 > 0.8f => CostGroup.Hardcore,
@@ -158,5 +177,65 @@ public class GridBlockChunk(int Id) {
         }
 
         return CostGroup.Hardcore;
+    }
+
+    /// <summary>
+    /// Attempts to unlock this chunk.
+    /// </summary>
+    public void Unlock(Player player, bool triggerSurprises = true) {
+
+        // consume unlock ingredients
+        if (player != null && UnlockCost != null) {
+            for (var i = 0; i < UnlockCost.stack; i++) player.ConsumeItem(UnlockCost.type);
+        }
+        
+        SoundEngine.PlaySound(SoundID.Unlock);
+
+        // set the flag
+        CollapseNeighboursUnlockCost();
+        IsUnlocked = true;
+
+        if (Group == CostGroup.Expensive) {
+            // trigger reward surprise
+            ModContent.GetInstance<RewardSurprise>().Trigger(player, this);
+            return;
+        }
+
+        if (!triggerSurprises || Main.rand.NextFloat() > 0.5f)
+            return;
+
+        var surprises = ModContent.GetContent<GridBlockSurprise>()
+            .Where(s => s.CanBeTriggered(player, this));
+
+        var surpriseHistory = player.GetModPlayer<GridBlockPlayer>().SurpriseHistory;
+        var eventRng = new WeightedRandom<GridBlockSurprise>(GridBlockWorld.Instance.GridSeed + Id * 2);
+        foreach (var surprise in surprises) {
+            var weight = surprise.GetWeight(player, this);
+
+            // scale weight based on how recently the event triggered
+            for (var i = 0; i < surpriseHistory.Count; i++) {
+                if (surpriseHistory[i] == surprise) {
+                    weight -= 1.0f / (1f + i);
+                    continue;
+                }
+            }
+
+            if (weight <= 0) continue;
+
+            eventRng.Add(surprise, weight * (surprise.IsNegative ? 0.75f : 1.0f));
+        }
+
+        if (eventRng.elements.Count > 0) {
+            var surprise = eventRng.Get();
+            surprise.Trigger(player, this);
+
+            // save surprise to history
+            player.GetModPlayer<GridBlockPlayer>().PushSurprise(surprise);
+
+            // display funny text
+            var origin = (WorldCoordTopLeft + new Vector2(GridBlockWorld.Instance.Chunks.CellSize * 16 * 0.5f)).ToPoint();
+            CombatText.NewText(new(origin.X - 16, origin.Y + 16, 32, 32), surprise.IsNegative ? Color.Red : Color.Gold, 
+                string.Concat(Language.GetTextValue($"Mods.GridBlock.Surprises.{surprise.GetType().Name}"), surprise.IsNegative ? "..." : "!"), true);
+        }
     }
 }

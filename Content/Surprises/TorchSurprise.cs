@@ -1,4 +1,5 @@
-﻿using GridBlock.Common.Surprises;
+﻿using GridBlock.Common;
+using GridBlock.Common.Surprises;
 using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
@@ -13,33 +14,29 @@ using Terraria.Utilities;
 
 namespace GridBlock.Content.Surprises;
 
-public class TorchSurprise : GridBlockSurprise.ProjectileSpawner<TorchSurpriseProjectile> { }
+public class TorchSurprise : GridBlockSurprise.ProjectileSpawner<TorchSurpriseProjectile> {
+    public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
+        var numberOfSolidsOrWalls = 0;
+        for (var i = 0; i < GridBlockWorld.Instance.Chunks.CellSize; i++) 
+            for (var k = 0; k < GridBlockWorld.Instance.Chunks.CellSize; k++) {
+                var coord = new Point(chunk.TileCoord.X + i, chunk.TileCoord.Y + k);
+                if (WorldGen.SolidOrSlopedTile(coord.X, coord.Y) || Main.tile[coord].WallType != 0)
+                    numberOfSolidsOrWalls++;
+            }
+        
+        // only happen in places where there's enough tiles for torches
+        if (numberOfSolidsOrWalls < 25) 
+            return false;
+        
+        return chunk.TileCoord.Y > Main.worldSurface || !Main.dayTime;
+    }
+}
+
 public class TorchSurpriseProjectile : TilePlaceSurpriseProjectile {
     public override void SetDefaults() {
         base.SetDefaults();
 
         Projectile.timeLeft = 60;
         TileType = TileID.Torches;
-    }
-}
-
-
-public class HealingSurprise : GridBlockSurprise.ProjectileSpawner<HealingSurpriseProjectile> { }
-public class HealingSurpriseProjectile : ItemShowerSurpriseProjectile {
-    public override void SetDefaults() {
-        base.SetDefaults();
-
-        Projectile.timeLeft = Main.rand.Next(10, 20) * 5;
-        ItemType = ItemID.Heart;
-        SpawnInterval = 5;
-    }
-
-    public override void OnItemSpawned(Item item) {
-        SoundEngine.PlaySound(SoundID.Item9);
-        for (var i = 0; i < 7; i++) {
-            var dust = Dust.NewDustDirect(item.position, 32, 32, DustID.GemRuby, Main.rand.NextFloat(-3, 3), Main.rand.NextFloat(-3, 3));
-            dust.noGravity = true;
-            dust.fadeIn = 1.5f;
-        }
     }
 }

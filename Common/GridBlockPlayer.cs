@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using GridBlock.Common.Surprises;
+using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,10 +9,53 @@ using Terraria;
 using Terraria.Audio;
 using Terraria.ID;
 using Terraria.ModLoader;
+using Terraria.ModLoader.IO;
 
 namespace GridBlock.Common;
 
 public class GridBlockPlayer : ModPlayer {
+
+    /// <summary>
+    /// To avoid duplication when giving out rewards.
+    /// </summary>
+    public List<Item> RichChunkRewards { get; private set; } = [];
+
+    /// <summary>
+    /// History of all the surprises this player encountered.
+    /// </summary>
+    public List<GridBlockSurprise> SurpriseHistory { get; private set; } = [];
+
+    /// <summary>
+    /// Adds surprise into the buffer, additionally clearing it.
+    /// </summary>
+    public void PushSurprise(GridBlockSurprise surprise) {
+        SurpriseHistory.Insert(0, surprise);
+        if (SurpriseHistory.Count > 5) {
+            SurpriseHistory.RemoveAt(5);
+        }
+    }
+
+    public override void SaveData(TagCompound tag) {
+        if (RichChunkRewards.Count > 0) tag[nameof(RichChunkRewards)] = RichChunkRewards;
+        if (SurpriseHistory.Count > 0) tag[nameof(SurpriseHistory)] = SurpriseHistory.Select(s => s.Id).ToList();
+    }
+
+    public override void LoadData(TagCompound tag) {
+        RichChunkRewards = tag.TryGet<List<Item>>("RichChunkRewards", out var rewards) ? rewards : [];
+        if (tag.TryGet<List<string>>(nameof(SurpriseHistory), out var history)) {
+            var surprises = ModContent.GetContent<GridBlockSurprise>().ToList();
+            foreach (var entry in history) {
+                var instance = surprises.Find(s => s.Id == entry);
+                if (instance is null) {
+                    Mod.Logger.Warn($"Couldn't load entry from surprise history! ({entry})");
+                    continue;
+                }
+
+                SurpriseHistory.Add(instance);
+            }
+        }
+    }
+
     public override bool CanUseItem(Item item) {
         // allow usage of RoD and pickaxes only inside unlocked chunks
         if (ModContent.GetInstance<GridBlockWorld>().Chunks?.GetByWorldPos(Main.MouseWorld) is GridBlockChunk chunk &&

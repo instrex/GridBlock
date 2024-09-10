@@ -35,6 +35,7 @@ public class GridBlockMapLayer : ModMapLayer {
                 CostGroup.Common => Color.Yellow,
                 CostGroup.Advanced => Color.Orange,
                 CostGroup.Hardcore => Color.Red,
+                CostGroup.Expensive => Color.Magenta,
                 _ => Color.White
             };
 
@@ -55,7 +56,9 @@ public class GridBlockMapLayer : ModMapLayer {
             }
 
             if (chunk.UnlockCost != null) {
-                context.Draw(TextureAssets.Item[chunk.UnlockCost.type].Value,
+                context.Draw(chunk.Group == CostGroup.Expensive ? ModContent.Request<Texture2D>("GridBlock/Assets/RewardIndicator").Value 
+                    : TextureAssets.Item[chunk.UnlockCost.type].Value,
+
                     pos + new Vector2(gridBlock.Chunks.CellSize * 0.5f),
                     Color.White,
                     new SpriteFrame(1, 1, 0, 0),

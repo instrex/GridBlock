@@ -3,15 +3,22 @@ using Terraria.Audio;
 using Terraria.ID;
 using Terraria.Utilities;
 using Terraria;
+using GridBlock.Common;
 
 namespace GridBlock.Content.Surprises;
 
-public class SlimeSurprise : GridBlockSurprise.ProjectileSpawner<SlimeSurpriseProjectile> { }
+public class SlimeSurprise : GridBlockSurprise.ProjectileSpawner<SlimeSurpriseProjectile> {
+    public override bool IsNegative => true;
+    public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
+        return !player.ZoneSkyHeight && chunk.TileCoord.Y < Main.worldSurface;
+    }
+}
+
 public class SlimeSurpriseProjectile : AmbushSurpriseProjectile {
     public override void SetDefaults() {
         base.SetDefaults();
 
-        Projectile.timeLeft = Main.rand.Next(4, 10) * SpawnInterval;
+        Projectile.timeLeft = (Main.rand.Next(2, 4) * (Main.rand.NextFloat() < 0.1f ? 2 : 1)) * SpawnInterval;
         NpcType = NPCID.BlueSlime;
     }
 

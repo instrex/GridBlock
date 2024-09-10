@@ -8,6 +8,9 @@
 		
 	</PropertyGroup>
 	<ItemGroup>
+	  <None Remove="Localization\en-US_Mods.GridBlock.Surprises.hjson" />
+	</ItemGroup>
+	<ItemGroup>
 	  <Folder Include="Assets\" />
 	</ItemGroup>
 

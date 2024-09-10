@@ -19,5 +19,10 @@ public enum CostGroup {
     /// <summary>
     /// Cost of world border chunks.
     /// </summary>
-    Hardcore
+    Hardcore,
+
+    /// <summary>
+    /// Special cost for chunks with reward event.
+    /// </summary>
+    Expensive,
 }

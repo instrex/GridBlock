@@ -6,6 +6,7 @@ using GridBlock.Common;
 namespace GridBlock.Content.Surprises;
 
 public class GenderSwapSurprise : GridBlockSurprise {
+    public override float GetWeight(Player player, GridBlockChunk chunk) => 0.25f;
     public override void Trigger(Player player, GridBlockChunk chunk) {
         player.Male = !player.Male;
         for (var i = 0; i < 32; i++) {

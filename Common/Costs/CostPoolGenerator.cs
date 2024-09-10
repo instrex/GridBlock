@@ -14,10 +14,13 @@ public static class CostPoolGenerator {
                 ModContent.GetInstance<GridBlock>().Logger.Warn($"Cost Group {group} isn't defined.");
                 break;
 
+            case CostGroup.Expensive:
+                rng.Add(new(ItemID.GoldCoin, 50));
+                break;
+
             case CostGroup.Beginner:
                 rng.Add(new(WorldGen.SavedOreTiers.Iron == TileID.Iron ? ItemID.IronOre : ItemID.LeadOre, 5));
-                rng.Add(new(ItemID.Mushroom, 5), 0.5);
-                rng.Add(new(ItemID.Mushroom, 10), 0.25f);
+                rng.Add(new(ItemID.Mushroom, 5), 0.15);
                 rng.Add(new(ItemID.Gel, 5));
                 rng.Add(new(ItemID.Gel, 10), 0.5);
                 rng.Add(new(ItemID.Gel, 15), 0.25);
