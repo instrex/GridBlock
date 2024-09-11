@@ -5,4 +5,5 @@ Projectiles: {
 	HealingSurpriseProjectile.DisplayName: Healing Surprise Projectile
 	OreSpawnSurpriseProjectile.DisplayName: Ore Spawn Surprise Projectile
 	SkeletalSurpriseProjectile.DisplayName: Skeletal Surprise Projectile
+	ZombieSurpriseProjectile.DisplayName: Zombie Surprise Projectile
 }

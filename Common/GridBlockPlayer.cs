@@ -56,10 +56,14 @@ public class GridBlockPlayer : ModPlayer {
         }
     }
 
+    public override IEnumerable<Item> AddStartingItems(bool mediumCoreDeath) {
+        yield return new(ItemID.Rope, 999);
+    }
+
     public override bool CanUseItem(Item item) {
         // allow usage of RoD and pickaxes only inside unlocked chunks
         if (ModContent.GetInstance<GridBlockWorld>().Chunks?.GetByWorldPos(Main.MouseWorld) is GridBlockChunk chunk &&
-            (item.type is ItemID.RodofDiscord or ItemID.RodOfHarmony || item.pick > 0 || item.createTile != -1)) {
+            (item.type is ItemID.RodofDiscord or ItemID.RodOfHarmony || (item.pick > 0 && !Main.SmartCursorShowing) || item.createTile != -1)) {
             return chunk.IsUnlocked;
         }
 

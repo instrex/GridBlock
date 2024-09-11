@@ -149,18 +149,18 @@ public class GridBlockChunk(int Id) {
             return CostGroup.Beginner;
         }
 
-        // make sure dungeon chunks are accessible at all times
-        if (!CheckRegionSafety(new(chunkCoord.X * map.CellSize, chunkCoord.Y * map.CellSize, map.CellSize, map.CellSize))) {
-            return CostGroup.Common;
-        }
+        // make sure dungeon chunks are accessible at all times (i dont think this is needed anymore)
+        // if (!CheckRegionSafety(new(chunkCoord.X * map.CellSize, chunkCoord.Y * map.CellSize, map.CellSize, map.CellSize))) {
+        //     return CostGroup.Common;
+        // }
 
-        // make 8x6 area around spawn substantially easier to unlock
-        if (spawnDistX <= 4 && spawnDistY <= 3) {
+        // make 12x6 area around spawn substantially easier to unlock
+        if (spawnDistX <= 6 && spawnDistY <= 3) {
             return CostGroup.Beginner;
         }
 
-        // make 16x12 area around spawn slightly easier to unlock
-        if (spawnDistX <= 8 && spawnDistY <= 8) {
+        // make 20x12 area around spawn slightly easier to unlock
+        if (spawnDistX <= 10 && spawnDistY <= 8) {
             return CostGroup.Common;
         }
 
@@ -170,13 +170,13 @@ public class GridBlockChunk(int Id) {
 
         if (dist < 0.75f) {
             return normalizedCoord.Y switch {
-                > 0.8f => CostGroup.Hardcore,
+                > 0.8f => gridRng.NextFloat() < 0.025f ? CostGroup.Adventure : CostGroup.Advanced,
                 > 0.25f => CostGroup.Advanced,
                 _ => CostGroup.Common
             };
         }
 
-        return CostGroup.Hardcore;
+        return gridRng.NextFloat() < 0.03f ? CostGroup.Adventure : CostGroup.Advanced;
     }
 
     /// <summary>
@@ -215,7 +215,7 @@ public class GridBlockChunk(int Id) {
             // scale weight based on how recently the event triggered
             for (var i = 0; i < surpriseHistory.Count; i++) {
                 if (surpriseHistory[i] == surprise) {
-                    weight -= 1.0f / (1f + i);
+                    weight *= 1f - i / 5f;
                     continue;
                 }
             }

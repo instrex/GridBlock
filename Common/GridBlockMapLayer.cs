@@ -34,7 +34,7 @@ public class GridBlockMapLayer : ModMapLayer {
                 CostGroup.Beginner => Color.Green,
                 CostGroup.Common => Color.Yellow,
                 CostGroup.Advanced => Color.Orange,
-                CostGroup.Hardcore => Color.Red,
+                CostGroup.Adventure => Color.Red,
                 CostGroup.Expensive => Color.Magenta,
                 _ => Color.White
             };

@@ -4,6 +4,8 @@ using Terraria.ID;
 using Terraria.Utilities;
 using Terraria;
 using GridBlock.Common;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace GridBlock.Content.Surprises;
 
@@ -12,6 +14,18 @@ public class RewardSurprise : GridBlockSurprise.ProjectileSpawner<RewardSurprise
 }
 
 public class RewardSurpriseProjectile : ItemShowerSurpriseProjectile {
+    static readonly HashSet<int> OneTimeRewards = [
+        ItemID.HermesBoots, ItemID.IceSkates, ItemID.FlurryBoots, ItemID.CreativeWings, ItemID.WandofSparking, ItemID.EnchantedSword,
+        ItemID.Starfury, ItemID.ShinyRedBalloon,
+        ItemID.Aglet,
+        ItemID.Radar,
+        ItemID.Mace,
+        ItemID.EnchantedBoomerang,
+        ItemID.ShoeSpikes,
+        ItemID.BandofRegeneration,
+        ItemID.CloudinaBottle,
+        ItemID.Extractinator];
+
     public override void SetDefaults() {
         base.SetDefaults();
 
@@ -22,6 +36,12 @@ public class RewardSurpriseProjectile : ItemShowerSurpriseProjectile {
     public override (int, int) GetItemTypeAndStack() {
         var player = Main.player[Projectile.owner];
         var rng = new WeightedRandom<(int, int)>();
+        void AddOneTimeLoot(int itemId, float weight = 1.0f, int stack = 1) {
+            if (player.GetModPlayer<GridBlockPlayer>().RichChunkRewards.Any(i => i.type == itemId))
+                return;
+
+            rng.Add((itemId, stack), weight);
+        }
 
         // add life crystals often
         if (player.statLifeMax < 400) rng.Add((ItemID.LifeCrystal, 1), 0.5);
@@ -30,14 +50,12 @@ public class RewardSurpriseProjectile : ItemShowerSurpriseProjectile {
         // add mana crystals sometimes
         if (player.statManaMax < 200) rng.Add((ItemID.ManaCrystal, 1), 0.025);
 
-        rng.Add((ItemID.HermesBoots, 1), 0.025);
-        rng.Add((ItemID.IceSkates, 1), 0.025);
-        rng.Add((ItemID.FlurryBoots, 1), 0.025);
-        rng.Add((ItemID.CreativeWings, 1), 0.025);
-        rng.Add((ItemID.WandofSparking, 1), 0.025);
-        rng.Add((ItemID.EnchantedSword, 1), 0.001);
-        rng.Add((ItemID.Starfury, 1), 0.025);
-        rng.Add((ItemID.ShinyRedBalloon, 1), 0.025);
+        // add onee-tiem rewards
+        foreach (var reward in OneTimeRewards) {
+            AddOneTimeLoot(reward, 0.25f);
+        }
+
+        // TODO: add hardmode rewards
 
         if (Main.hardMode) {
             rng.Add((WorldGen.SavedOreTiers.Cobalt == TileID.Cobalt ? ItemID.CobaltBar : ItemID.PalladiumBar, Main.rand.Next(1, 5) * 5));
@@ -65,6 +83,10 @@ public class RewardSurpriseProjectile : ItemShowerSurpriseProjectile {
     }
 
     public override void OnItemSpawned(Item item) {
+        if (OneTimeRewards.Contains(item.type)) {
+            Main.player[Projectile.owner].GetModPlayer<GridBlockPlayer>().RichChunkRewards.Add(item.Clone());
+        }
+
         SoundEngine.PlaySound(SoundID.Item158 with { PitchVariance = 0.5f });
         for (var i = 0; i < 7; i++) {
             var dust = Dust.NewDustDirect(item.position, 32, 32, DustID.GoldCoin, Main.rand.NextFloat(-3, 3), Main.rand.NextFloat(-3, 3));

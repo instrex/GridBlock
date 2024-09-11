@@ -34,8 +34,6 @@ public static class CostPoolGenerator {
 
             case CostGroup.Common:
                 rng.Add(new(ItemID.Wood, 15));
-                rng.Add(new(ItemID.RichMahogany, 15), 0.5);
-                rng.Add(new(ItemID.PalmWood, 15), 0.5);
                 rng.Add(new(ItemID.Torch, 20));
                 rng.Add(new(ItemID.Torch, 40), 0.25);
                 rng.Add(new(ItemID.Daybloom, 5));
@@ -57,7 +55,6 @@ public static class CostPoolGenerator {
                 rng.Add(new(WorldGen.SavedOreTiers.Iron == TileID.Iron ? ItemID.IronBar : ItemID.LeadBar, 5));
                 rng.Add(new(WorldGen.SavedOreTiers.Silver == TileID.Silver ? ItemID.SilverBar : ItemID.TungstenBar, 5));
                 rng.Add(new(WorldGen.SavedOreTiers.Gold == TileID.Gold ? ItemID.GoldBar : ItemID.PlatinumBar, 5));
-                rng.Add(new(ItemID.AntlionMandible, 3));
                 rng.Add(new(ItemID.GoldCoin, 5));
                 rng.Add(new(ItemID.GoldCoin, 15), 0.25);
                 rng.Add(new(ItemID.Lens, 5));
@@ -66,10 +63,14 @@ public static class CostPoolGenerator {
             case CostGroup.Advanced:
                 rng.Add(new(ItemID.JungleSpores, 5), 0.5);
                 rng.Add(new(ItemID.Vine, 5), 0.5);
+                rng.Add(new(ItemID.RichMahogany, 15), 0.5);
+                rng.Add(new(ItemID.PalmWood, 15), 0.5);
+                rng.Add(new(ItemID.AntlionMandible, 3));
                 rng.Add(new(ItemID.Stinger, 10), 0.5);
                 rng.Add(new(ItemID.Amethyst, 5));
                 rng.Add(new(ItemID.Sapphire, 5));
                 rng.Add(new(ItemID.Emerald, 5));
+                rng.Add(new(ItemID.SpelunkerPotion, 1));
                 rng.Add(new(ItemID.Ruby, 5));
                 rng.Add(new(ItemID.Diamond, 1), 0.5);
                 rng.Add(new(ItemID.Amber, 1), 0.5);
@@ -77,25 +78,35 @@ public static class CostPoolGenerator {
                 rng.Add(new(WorldGen.SavedOreTiers.Silver == TileID.Silver ? ItemID.SilverBar : ItemID.TungstenBar, 5));
                 rng.Add(new(WorldGen.SavedOreTiers.Gold == TileID.Gold ? ItemID.GoldBar : ItemID.PlatinumBar, 5));
                 rng.Add(new(ItemID.Cloud, 15));
+                rng.Add(new(ItemID.Bone, 15));
+                rng.Add(new(ItemID.FossilOre, 5));
+                rng.Add(new(ItemID.SpikyBall, 15));
                 rng.Add(new(ItemID.GlowingMushroom, 15));
                 rng.Add(new(ItemID.Granite, 25));
                 rng.Add(new(ItemID.Marble, 25));
+                rng.Add(new(ItemID.Obsidian, 10));
+                rng.Add(new(ItemID.AshBlock, 25));
                 rng.Add(new(ItemID.HardenedSand, 25));
-                rng.Add(new(WorldGen.WorldGenParam_Evil == 0 ? ItemID.EbonstoneBlock : ItemID.CrimstoneBlock, 25));
+                rng.Add(new(WorldGen.WorldGenParam_Evil == 0 ? ItemID.EbonstoneBlock : ItemID.CrimstoneBlock, 15));
+                rng.Add(new(WorldGen.WorldGenParam_Evil == 0 ? ItemID.ShadowScale : ItemID.TissueSample, 5));
                 rng.Add(new(ItemID.GoldCoin, 10));
                 rng.Add(new(ItemID.GoldCoin, 30), 0.25);
                 break;
 
-            case CostGroup.Hardcore:
-                //rng.Add(new(ItemID.IronBar, 5));
-                //rng.Add(new(ItemID.LeadBar, 5));
-                //rng.Add(new(ItemID.SilverBar, 5));
-                //rng.Add(new(ItemID.TungstenBar, 5));
-                //rng.Add(new(ItemID.GoldBar, 5));
-                //rng.Add(new(ItemID.PlatinumBar, 5));
-                rng.Add(new(ItemID.LunarBar, 999));
-                rng.Add(new(ItemID.Meowmere, 999));
-                rng.Add(new(ItemID.Zenith, 999));
+            case CostGroup.Adventure:
+                rng.Add(new(ItemID.Bunny));
+                rng.Add(new(ItemID.Toilet));
+                rng.Add(new(ItemID.Burger));
+                rng.Add(new(ItemID.WaterBucket));
+                rng.Add(new(ItemID.Abeemination));
+                rng.Add(new(ItemID.BladeofGrass));
+                rng.Add(new(ItemID.NightsEdge));
+                rng.Add(new(ItemID.EoCShield));
+                rng.Add(new(ItemID.CobaltShield));
+                rng.Add(new(ItemID.WaterCandle));
+                rng.Add(new(ItemID.SuspiciousLookingEye));
+                rng.Add(new(ItemID.MeteoriteBar, 10));
+                rng.Add(new(WorldGen.WorldGenParam_Evil == 0 ? ItemID.DemoniteBar : ItemID.CrimtaneBar, 10));
                 break;
 
         }

@@ -35,9 +35,9 @@ public class UnlockNeighbourSurprise : GridBlockSurprise {
         chosenOne.Unlock(player);
 
         var origin = (chunk.WorldCoordTopLeft + new Vector2(GridBlockWorld.Instance.Chunks.CellSize * 16 * 0.5f)).ToPoint();
-        CombatText.NewText(new(origin.X - 16, origin.Y + 75, 32, 2), Color.Gold * 0.75f,
-            Language.GetTextValue($"Mods.GridBlock.Surprises.UnlockNeighbourSurprise.Tip"),
-            true);
+        //CombatText.NewText(new(origin.X - 16, origin.Y + 75, 32, 2), Color.Gold * 0.75f,
+        //    Language.GetTextValue($"Mods.GridBlock.Surprises.UnlockNeighbourSurprise.Tip"),
+        //    true);
     }
 }
 
