@@ -10,4 +10,12 @@ public class GridBlockGlobalTile : GlobalTile {
 
         return true;
     }
+
+    public override bool CanPlace(int i, int j, int type) {
+        if (ModContent.GetInstance<GridBlockWorld>().Chunks?.GetByTileCoord(new(i, j)) is GridBlockChunk chunk) {
+            return chunk.IsUnlocked;
+        }
+
+        return true;
+    }
 }

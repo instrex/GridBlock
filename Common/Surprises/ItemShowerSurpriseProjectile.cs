@@ -1,4 +1,5 @@
 ﻿using GridBlock.Common;
+using GridBlock.Common.Globals;
 using Microsoft.Xna.Framework;
 using Terraria;
 
@@ -24,6 +25,7 @@ public abstract class ItemShowerSurpriseProjectile : SurpriseProjectile {
                     var (type, stack) = GetItemTypeAndStack();
                     var item = Item.NewItem(Projectile.GetSource_FromThis(), tileCoord.ToWorldCoordinates(), type, stack);
                     Main.item[item].velocity.Y = -4;
+                    Main.item[item].GetGlobalItem<GridBlockItem>().IsGridBlockReward = true;
                     OnItemSpawned(Main.item[item]);
                     break;
                 }

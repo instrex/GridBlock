@@ -83,75 +83,89 @@ public class GridBlockWorld : ModSystem {
                 return true;
             }));
         }
-        
     }
 
     public override void SaveWorldData(TagCompound tag) {
         tag["GridVersion"] = WorldVersion;
         tag["GridSeed"] = GridSeed;
 
+        if (Chunks is null) {
+            Mod.Logger.Warn("GridBlock Chunk data was null!");
+            return;
+        }
+
         List<TagCompound> savedChunks = [];
         for (var id = 0; id < Chunks.Length; id++) {
             var chunk = Chunks.GetById(id);
-            if (!chunk.ShouldBeSaved) 
+            if (chunk is null || !chunk.ShouldBeSaved) 
                 continue;
 
-            var chunkTag = new TagCompound { ["ChunkId"] = id };
-            savedChunks.Add(chunkTag);
+            try {
+                var chunkTag = new TagCompound { ["ChunkId"] = id };
+                savedChunks.Add(chunkTag);
 
-            if (chunk.IsUnlocked) {
-                // if it's unlocked, no other information is required
-                chunkTag[nameof(GridBlockChunk.IsUnlocked)] = true;
-                continue;
-            }
-
-            if (chunk.IsUnlockCostCollapsed && chunk.Group != CostGroup.Expensive) {
-                if (chunk.UnlockCost is null) {
-                    ModContent.GetInstance<GridBlock>().Logger.Warn("Attempted to save a chunk with collapsed unlock cost but no item instance? Weird...");
+                if (chunk.IsUnlocked) {
+                    // if it's unlocked, no other information is required
+                    chunkTag[nameof(GridBlockChunk.IsUnlocked)] = true;
+                    continue;
                 }
 
-                chunkTag[nameof(GridBlockChunk.IsUnlockCostCollapsed)] = true;
-                chunkTag[nameof(GridBlockChunk.UnlockCost)] = chunk.UnlockCost;
+                if (chunk.IsUnlockCostCollapsed && chunk.Group != CostGroup.Expensive) {
+                    if (chunk.UnlockCost is null) {
+                        ModContent.GetInstance<GridBlock>().Logger.Warn("Attempted to save a chunk with collapsed unlock cost but no item instance? Weird...");
+                    }
+
+                    chunkTag[nameof(GridBlockChunk.IsUnlockCostCollapsed)] = true;
+                    chunkTag[nameof(GridBlockChunk.UnlockCost)] = chunk.UnlockCost;
+                }
+            } catch (Exception ex) {
+                Mod.Logger.Warn($"Failed to save chunk state at {id}!", ex);
             }
+            
         }
 
         tag["GridChunks"] = savedChunks;
     }
 
     public override void LoadWorldData(TagCompound tag) {
+        if (tag.TryGet<string>("GridVersion", out var version))
+            WorldVersion = version;
+
+        if (tag.TryGet<int>("GridSeed", out var seed))
+            GridSeed = seed;
+
         // create determenistic chunks
         ResetChunks();
 
-        try {
-            WorldVersion = tag.Get<string>("GridVersion");
-            GridSeed = tag.Get<int>("GridSeed");
-
+        if (tag.TryGet<List<TagCompound>>("GridChunks", out var chunks)) {
             foreach (var chunkTag in tag.Get<List<TagCompound>>("GridChunks")) {
-                var id = chunkTag.Get<int>("ChunkId");
+                try {
+                    var id = chunkTag.Get<int>("ChunkId");
+                    if (Chunks.GetById(id) is not GridBlockChunk chunk) {
+                        Mod.Logger.Warn($"Attempted to set non-existent chunk during loading. (Id: {id})");
+                        continue;
+                    }
 
-                if (Chunks.GetById(id) is not GridBlockChunk chunk) {
-                    Mod.Logger.Warn($"Attempted to set non-existent chunk during loading. (Id: {id})");
-                    continue;
-                }
+                    // unlock the chunk if its set as unlocked
+                    if (chunkTag.ContainsKey(nameof(GridBlockChunk.IsUnlocked))) {
+                        chunk.IsUnlocked = true;
+                        continue;
+                    }
 
-                // unlock the chunk if its set as unlocked
-                if (chunkTag.ContainsKey(nameof(GridBlockChunk.IsUnlocked))) {
-                    chunk.IsUnlocked = true;
-                    continue;
-                }
-
-                // set collapsed unlock
-                if (chunkTag.ContainsKey(nameof(GridBlockChunk.IsUnlockCostCollapsed))) {
-                    var item = chunkTag.Get<Item>(nameof(GridBlockChunk.UnlockCost));
-                    chunk.IsUnlockCostCollapsed = true;
-                    chunk.UnlockCost = item;
-                    continue;
+                    // set collapsed unlock
+                    if (chunkTag.ContainsKey(nameof(GridBlockChunk.IsUnlockCostCollapsed))) {
+                        var item = chunkTag.Get<Item>(nameof(GridBlockChunk.UnlockCost));
+                        chunk.IsUnlockCostCollapsed = true;
+                        chunk.UnlockCost = item;
+                        continue;
+                    }
+                } catch (Exception ex) {
+                    Mod.Logger.Error("Failed to load one of GridBlock chunks!", ex);
                 }
             }
 
-        } catch (Exception ex) {
-            Mod.Logger.Error("Error loading GridBlock data!");
-            Mod.Logger.Error(ex);
+        } else {
+            Mod.Logger.Warn("No GridBlock chunk data found...");
         }
     }
 }

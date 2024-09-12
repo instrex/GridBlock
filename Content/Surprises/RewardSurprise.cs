@@ -14,9 +14,15 @@ public class RewardSurprise : GridBlockSurprise.ProjectileSpawner<RewardSurprise
 }
 
 public class RewardSurpriseProjectile : ItemShowerSurpriseProjectile {
-    static readonly HashSet<int> OneTimeRewards = [
-        ItemID.HermesBoots, ItemID.IceSkates, ItemID.FlurryBoots, ItemID.CreativeWings, ItemID.WandofSparking, ItemID.EnchantedSword,
-        ItemID.Starfury, ItemID.ShinyRedBalloon,
+    public static readonly HashSet<int> OneTimeRewards = [
+        ItemID.HermesBoots, 
+        ItemID.IceSkates,
+        ItemID.FlurryBoots,
+        ItemID.CreativeWings, 
+        ItemID.WandofSparking, 
+        ItemID.EnchantedSword,
+        ItemID.Starfury, 
+        ItemID.ShinyRedBalloon,
         ItemID.Aglet,
         ItemID.Radar,
         ItemID.Mace,
@@ -24,13 +30,15 @@ public class RewardSurpriseProjectile : ItemShowerSurpriseProjectile {
         ItemID.ShoeSpikes,
         ItemID.BandofRegeneration,
         ItemID.CloudinaBottle,
-        ItemID.Extractinator];
+        ItemID.Extractinator,
+        ItemID.LavaCharm,
+        ItemID.AnkletoftheWind
+    ];
 
     public override void SetDefaults() {
         base.SetDefaults();
 
         Projectile.timeLeft = (Main.hardMode ? 3 : 5) * SpawnInterval;
-        SoundEngine.PlaySound(SoundID.AchievementComplete with { PitchVariance = 0.2f });
     }
 
     public override (int, int) GetItemTypeAndStack() {
@@ -62,22 +70,30 @@ public class RewardSurpriseProjectile : ItemShowerSurpriseProjectile {
             rng.Add((WorldGen.SavedOreTiers.Mythril == TileID.Mythril ? ItemID.MythrilBar : ItemID.OrichalcumBar, Main.rand.Next(1, 5) * 4), 0.5);
             rng.Add((WorldGen.SavedOreTiers.Adamantite == TileID.Adamantite ? ItemID.AdamantiteBar : ItemID.TitaniumBar, Main.rand.Next(1, 5) * 3), 0.25);
 
+            rng.Add((ItemID.WoodenCrateHard, 1));
+            rng.Add((ItemID.IronCrateHard, 1));
+            rng.Add((ItemID.GoldenCrateHard, 1), 0.25);
+
             if (NPC.downedMechBoss1 && NPC.downedMechBoss2 && NPC.downedMechBoss3) {
                 rng.Add((ItemID.ChlorophyteBar, Main.rand.Next(1, 5) * 4), 0.5);
             }
+        } else {
+            rng.Add((ItemID.WoodenCrate, 1));
+            rng.Add((ItemID.IronCrate, 1));
+            rng.Add((ItemID.GoldenCrate, 1), 0.25);
         }
 
         // common rewards
         rng.Add((ItemID.HerbBag, Main.rand.Next(1, 5)), 0.25);
-
-        // coin rewards are rarer
-        if (!Main.hardMode) {
-            rng.Add((ItemID.SilverCoin, 10), 0.25);
-            rng.Add((ItemID.SilverCoin, 50), 0.25);
-        }
-        
-        rng.Add((ItemID.GoldCoin, Main.hardMode ? 50 : 1), 0.15);
-        rng.Add((ItemID.GoldCoin, Main.hardMode ? 100 : 5), 0.05);
+        rng.Add((ItemID.IronskinPotion, Main.rand.Next(2, 5) * 5), 0.25);
+        rng.Add((ItemID.ArcheryPotion, Main.rand.Next(2, 5) * 5), 0.25);
+        rng.Add((ItemID.InfernoPotion, Main.rand.Next(2, 5) * 5), 0.25);
+        rng.Add((ItemID.EndurancePotion, Main.rand.Next(2, 5) * 5), 0.25);
+        rng.Add((ItemID.SpelunkerPotion, Main.rand.Next(2, 5) * 5), 0.25);
+        rng.Add((ItemID.WrathPotion, Main.rand.Next(3, 5) * 5), 0.25);
+        rng.Add((ItemID.LuckPotion, Main.rand.Next(1, 3) * 5), 0.15);
+        rng.Add((ItemID.LuckPotionLesser, Main.rand.Next(3, 5) * 5), 0.2);
+        rng.Add((ItemID.LuckPotionGreater, Main.rand.Next(1, 5)), 0.1);
 
         return rng.Get();
     }

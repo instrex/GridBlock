@@ -18,12 +18,14 @@ public class GridBlockPlayer : ModPlayer {
     /// <summary>
     /// To avoid duplication when giving out rewards.
     /// </summary>
-    public List<Item> RichChunkRewards { get; private set; } = [];
+    public HashSet<Item> RichChunkRewards { get; private set; } = [];
 
     /// <summary>
     /// History of all the surprises this player encountered.
     /// </summary>
     public List<GridBlockSurprise> SurpriseHistory { get; private set; } = [];
+
+    int _stuckTimer;
 
     /// <summary>
     /// Adds surprise into the buffer, additionally clearing it.
@@ -36,12 +38,12 @@ public class GridBlockPlayer : ModPlayer {
     }
 
     public override void SaveData(TagCompound tag) {
-        if (RichChunkRewards.Count > 0) tag[nameof(RichChunkRewards)] = RichChunkRewards;
+        if (RichChunkRewards.Count > 0) tag[nameof(RichChunkRewards)] = RichChunkRewards.ToList();
         if (SurpriseHistory.Count > 0) tag[nameof(SurpriseHistory)] = SurpriseHistory.Select(s => s.Id).ToList();
     }
 
     public override void LoadData(TagCompound tag) {
-        RichChunkRewards = tag.TryGet<List<Item>>("RichChunkRewards", out var rewards) ? rewards : [];
+        RichChunkRewards = new(tag.TryGet<List<Item>>("RichChunkRewards", out var rewards) ? rewards : []);
         if (tag.TryGet<List<string>>(nameof(SurpriseHistory), out var history)) {
             var surprises = ModContent.GetContent<GridBlockSurprise>().ToList();
             foreach (var entry in history) {
@@ -71,14 +73,29 @@ public class GridBlockPlayer : ModPlayer {
     }
 
     public override void PreUpdateMovement() {
+        HorizontalCollisionCheck();
+        VerticalCollisionCheck();
+
         var gridWorld = ModContent.GetInstance<GridBlockWorld>();
         if (gridWorld.Chunks is null)
             return;
 
-        HorizontalCollisionCheck();
+        var tileCoord = Player.Center.ToTileCoordinates();
+        if (gridWorld.Chunks.GetByTileCoord(tileCoord)?.IsUnlocked == false) {
+            if (_stuckTimer++ > 5) {
+                Player.Teleport(new Vector2(Main.spawnTileX * 16, (Main.spawnTileY - 3) * 16), 2);
+                _stuckTimer = 0;
+            }
+        } else _stuckTimer = 0;
+    }
+
+    void VerticalCollisionCheck() {
+        var gridWorld = ModContent.GetInstance<GridBlockWorld>();
+        if (gridWorld.Chunks is null)
+            return;
 
         var playerRect = Player.getRect();
-        var playerPos = new Vector2(Player.velocity.X > 0 ? playerRect.Right : playerRect.Left,
+        var playerPos = new Vector2(playerRect.Center.X,
             Player.velocity.Y > 0 ? playerRect.Bottom : playerRect.Top);
 
         var currentChunkCoord = new Point((int)playerPos.X / 16 / gridWorld.Chunks.CellSize,

@@ -61,7 +61,7 @@ public class GridBlockChunk(int Id) {
             return;
 
         var gridWorld = ModContent.GetInstance<GridBlockWorld>();
-        var pool = CostPoolGenerator.GetPool(Group, gridWorld.GridSeed + Id);
+        var pool = CostPoolGenerator.GetPool(Group, this, gridWorld.GridSeed + Id);
 
         List<GridBlockChunk> neighbours = [];
         for (var i = -1; i < 2; i++) {
@@ -102,6 +102,75 @@ public class GridBlockChunk(int Id) {
             }
         }
     }
+
+    /// <summary>
+    /// Called when any player is near the chunk.
+    /// </summary>
+    public void Update(Player player) {
+        if (Group == CostGroup.Expensive && UnlockCost != null) {
+            var plr = player.GetModPlayer<GridBlockPlayer>();
+            UnlockCost.stack = (int)((Main.hardMode ? CostPoolGenerator.RewardChunkBasePriceHardmode :  CostPoolGenerator.RewardChunkBasePrice) 
+                * (1f + plr.RichChunkRewards.Count(i => RewardSurpriseProjectile.OneTimeRewards.Contains(i.type)) * CostPoolGenerator.RewardChunkIncrease));
+        }
+    }
+
+    public bool CheckUnlockRequirementsForPlayer(Player player) {
+        if (UnlockCost is null)
+            return false;
+
+        if (UnlockCost.IsACoin) {
+            switch (UnlockCost.type) {
+                case ItemID.GoldCoin:
+                    if (player.HasItem(ItemID.PlatinumCoin))
+                        return true;
+
+                    break;
+
+                case ItemID.SilverCoin:
+                    if (player.HasItem(ItemID.GoldCoin) || player.HasItem(ItemID.PlatinumCoin))
+                        return true;
+
+                    break;
+            }
+        }
+
+        return player.CountItem(UnlockCost.type, UnlockCost.stack) >= UnlockCost.stack;
+    }
+
+    public void ConsumeUnlockRequirements(Player player) {
+        if (UnlockCost is null)
+            return;
+
+        if (UnlockCost.IsACoin && player.CountItem(UnlockCost.type, UnlockCost.stack) < UnlockCost.stack) {
+            switch (UnlockCost.type) {
+                case ItemID.SilverCoin:
+                    if (player.HasItem(ItemID.GoldCoin)) {
+                        player.ConsumeItem(ItemID.GoldCoin);
+                        player.QuickSpawnItem(player.GetSource_FromThis(), ItemID.SilverCoin, 100 - UnlockCost.stack);
+                    } 
+
+                    else if (player.HasItem(ItemID.PlatinumCoin)) {
+                        player.ConsumeItem(ItemID.PlatinumCoin);
+                        player.QuickSpawnItem(player.GetSource_FromThis(), ItemID.GoldCoin, 99);
+                        player.QuickSpawnItem(player.GetSource_FromThis(), ItemID.SilverCoin, 100 - UnlockCost.stack);
+                    }
+
+                    break;
+
+                case ItemID.GoldCoin:
+                    if (player.HasItem(ItemID.PlatinumCoin)) {
+                        player.ConsumeItem(ItemID.GoldCoin);
+                        player.QuickSpawnItem(player.GetSource_FromThis(), ItemID.GoldCoin, 100 - UnlockCost.stack);
+                    }
+
+                    break;
+            }
+        }
+
+        for (var i = 0; i < UnlockCost.stack; i++) 
+            player.ConsumeItem(UnlockCost.type);
+    }
+
 
     /// <summary>
     /// Returns this chunk's location in tile-space.
@@ -183,11 +252,9 @@ public class GridBlockChunk(int Id) {
     /// Attempts to unlock this chunk.
     /// </summary>
     public void Unlock(Player player, bool triggerSurprises = true) {
-
         // consume unlock ingredients
-        if (player != null && UnlockCost != null) {
-            for (var i = 0; i < UnlockCost.stack; i++) player.ConsumeItem(UnlockCost.type);
-        }
+        if (player != null && UnlockCost != null) 
+            ConsumeUnlockRequirements(player);
         
         SoundEngine.PlaySound(SoundID.Unlock);
 
@@ -232,10 +299,12 @@ public class GridBlockChunk(int Id) {
             // save surprise to history
             player.GetModPlayer<GridBlockPlayer>().PushSurprise(surprise);
 
+            var text = string.Concat(Language.GetTextValue($"Mods.GridBlock.Surprises.{surprise.GetType().Name}"), surprise.IsNegative ? "..." : "!");
+
             // display funny text
             var origin = (WorldCoordTopLeft + new Vector2(GridBlockWorld.Instance.Chunks.CellSize * 16 * 0.5f)).ToPoint();
-            CombatText.NewText(new(origin.X - 16, origin.Y + 16, 32, 32), surprise.IsNegative ? Color.Red : Color.Gold, 
-                string.Concat(Language.GetTextValue($"Mods.GridBlock.Surprises.{surprise.GetType().Name}"), surprise.IsNegative ? "..." : "!"), true);
+            CombatText.NewText(new(origin.X - 16, origin.Y + 16, 32, 32), surprise.IsNegative ? Color.Red : Color.Gold, text, true);
+            Main.NewText(text, surprise.IsNegative ? Color.Red : Color.Gold);
         }
     }
 }

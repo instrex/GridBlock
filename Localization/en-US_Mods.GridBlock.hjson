@@ -7,3 +7,5 @@ Projectiles: {
 	SkeletalSurpriseProjectile.DisplayName: Skeletal Surprise Projectile
 	ZombieSurpriseProjectile.DisplayName: Zombie Surprise Projectile
 }
+
+HoldToUnlock: Hold to unlock!
