@@ -186,6 +186,8 @@ public class GridBlockChunk(int Id) {
     public Point ChunkCoord => GridBlockWorld.Instance.Chunks.ToChunkCoord(Id);
     public Vector2 WorldCoordTopLeft => TileCoord.ToWorldCoordinates(0, 0);
 
+    public Rectangle WorldBounds => new((int)WorldCoordTopLeft.X, (int)WorldCoordTopLeft.Y, GridBlockWorld.Instance.Chunks.CellSize * 16, GridBlockWorld.Instance.Chunks.CellSize * 16);
+
     /// <summary>
     /// Calculate CostGroup for a given chunk.
     /// </summary>

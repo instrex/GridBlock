@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Terraria;
 using Terraria.Audio;
+using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
@@ -72,9 +73,16 @@ public class GridBlockPlayer : ModPlayer {
         return true;
     }
 
+    GridBlockChunk[,] _adjChunks = new GridBlockChunk[3, 3];
+    int _adjUpdateTimer;
+
     public override void PreUpdateMovement() {
-        HorizontalCollisionCheck();
-        VerticalCollisionCheck();
+        // HorizontalCollisionCheck();
+        // VerticalCollisionCheck();
+
+        CheckCollision();
+
+        return;
 
         var gridWorld = ModContent.GetInstance<GridBlockWorld>();
         if (gridWorld.Chunks is null)
@@ -89,86 +97,72 @@ public class GridBlockPlayer : ModPlayer {
         } else _stuckTimer = 0;
     }
 
-    void VerticalCollisionCheck() {
-        var gridWorld = ModContent.GetInstance<GridBlockWorld>();
-        if (gridWorld.Chunks is null)
+    void CheckCollision() {
+        if (GridBlockWorld.Instance.Chunks is not GridMap2D<GridBlockChunk> chunks)
             return;
 
-        var playerRect = Player.getRect();
-        var playerPos = new Vector2(playerRect.Center.X,
-            Player.velocity.Y > 0 ? playerRect.Bottom : playerRect.Top);
+        // update adj chunks first
+        if (_adjUpdateTimer-- <= 0) {
+            var center = chunks.GetByWorldPos(Player.Center).ChunkCoord;
+            for (var i = 0; i < 3; i++) {
+                for (var k = 0; k < 3; k++) {
+                    _adjChunks[i, k] = chunks.GetByChunkCoord(center + new Point(i - 1, k - 1));
+                }
+            }
 
-        var currentChunkCoord = new Point((int)playerPos.X / 16 / gridWorld.Chunks.CellSize,
-            (int)playerPos.Y / 16 / gridWorld.Chunks.CellSize);
+            _adjUpdateTimer = 10;
+        }
 
-        // vertical check
-        if (gridWorld.Chunks.GetByChunkCoord(currentChunkCoord) is GridBlockChunk chunk && !chunk.IsUnlocked) {
-            var tileBounds = new Rectangle(
-                currentChunkCoord.X * gridWorld.Chunks.CellSize,
-                currentChunkCoord.Y * gridWorld.Chunks.CellSize,
-                gridWorld.Chunks.CellSize, gridWorld.Chunks.CellSize
-            );
+        var collisionOccured = false;
 
-            var worldBounds = new Rectangle(tileBounds.X * 16, tileBounds.Y * 16, tileBounds.Width * 16, tileBounds.Height * 16);
-
-            // push out players vertically
-            if (worldBounds.Intersects(playerRect)) {
-                var worldY = tileBounds.Center.Y * 16 + 8;
-                var pushDir = Player.position.Y > worldY ? 1 : -1;
-                Player.position.Y = pushDir == 1 ? tileBounds.Bottom * 16 - 4 : tileBounds.Top * 16 - Player.height + 2;
-                Player.velocity.Y = pushDir == 1 ? Player.velocity.Y : 0;
+        var top = _adjChunks[1, 0];
+        if (top != null && !top.IsUnlocked) {
+            if (Player.Top.Y < top.WorldBounds.Bottom) {
+                Player.Top = Player.Top with { Y = top.WorldBounds.Bottom + 2 };
                 Player.gfxOffY = 0;
-
-                // Main.NewText($"PASHOL VON Y {Player.velocity} {Player.gfxOffY}");
+                collisionOccured = true;
             }
         }
-    }
 
-    void HorizontalCollisionCheck() {
-        var gridWorld = ModContent.GetInstance<GridBlockWorld>();
-        if (gridWorld.Chunks is null)
-            return;
-
-        var playerRect = Player.getRect();
-        var playerPos = new Vector2(Player.velocity.X > 0 ? playerRect.Right : playerRect.Left, playerRect.Center.Y);
-
-        var currentChunkCoord = new Point((int)playerPos.X / 16 / gridWorld.Chunks.CellSize,
-            (int)playerPos.Y / 16 / gridWorld.Chunks.CellSize);
-
-        if (gridWorld.Chunks.GetByChunkCoord(currentChunkCoord) is not GridBlockChunk chunk || chunk.IsUnlocked)
-            return;
-
-        var tileBounds = new Rectangle(
-            currentChunkCoord.X * gridWorld.Chunks.CellSize,
-            currentChunkCoord.Y * gridWorld.Chunks.CellSize,
-            gridWorld.Chunks.CellSize, gridWorld.Chunks.CellSize
-        );
-
-        var worldBounds = new Rectangle(tileBounds.X * 16, tileBounds.Y * 16, tileBounds.Width * 16, tileBounds.Height * 16);
-
-        var xDir = MathF.Sign(worldBounds.Center.X - Player.Center.X);
-
-        if (xDir == 1 && playerRect.Right > worldBounds.Left) {
-            Player.position.X = worldBounds.Left - Player.width;
-            Player.velocity.X *= -1;
-
-            if (MathF.Abs(Player.velocity.X) > 2f)
-                SoundEngine.PlaySound(SoundID.Item56 with { PitchVariance = 1 }, Player.Center);
-
-            // Main.NewText("X RIGHT");
+        var bottom = _adjChunks[1, 2];
+        if (bottom != null && !bottom.IsUnlocked) {
+            if (Player.Bottom.Y > bottom.WorldBounds.Top) {
+                Player.Bottom = Player.Bottom with { Y = bottom.WorldBounds.Top + 2 };
+                Player.velocity.Y = Player.justJumped ? Player.velocity.Y : 0;
+                Player.gfxOffY = 0;
+                collisionOccured = true;
+            }
         }
 
+        var left = _adjChunks[0, 1];
+        if (left != null && !left.IsUnlocked) {
+            if (Player.Left.X < left.WorldBounds.Right) {
+                Player.Left = Player.Left with { X = left.WorldBounds.Right };
+                Player.velocity.X *= -1;
+                collisionOccured = true;
 
-        else if (xDir == -1 && playerRect.Left < worldBounds.Right) {
-            Player.position.X = worldBounds.Right;
-            Player.velocity.X *= -1;
-
-            if (MathF.Abs(Player.velocity.X) > 2f) 
-                SoundEngine.PlaySound(SoundID.Item56 with { PitchVariance = 1 }, Player.Center);
-            
-            
-
-            // Main.NewText("X LEFT");
+                if (MathF.Abs(Player.velocity.X) > 2f)
+                    SoundEngine.PlaySound(SoundID.Item56 with { PitchVariance = 1 }, Player.Center);
+            }
         }
+
+        var right = _adjChunks[2, 1];
+        if (right != null && !right.IsUnlocked) {
+            if (Player.Right.X > right.WorldBounds.Left) {
+                Player.Right = Player.Right with { X = right.WorldBounds.Left };
+                Player.velocity.X *= -1;
+                collisionOccured = true;
+
+                if (MathF.Abs(Player.velocity.X) > 2f)
+                    SoundEngine.PlaySound(SoundID.Item56 with { PitchVariance = 1 }, Player.Center);
+            }
+        }
+
+        var current = _adjChunks[1, 1];
+        if (current != null && !current.IsUnlocked) {
+            Player.Hurt(new() { Damage = 5, DamageSource = PlayerDeathReason.LegacyDefault() });
+        }
+
+        if (collisionOccured) Player.RemoveAllGrapplingHooks();
     }
 }
