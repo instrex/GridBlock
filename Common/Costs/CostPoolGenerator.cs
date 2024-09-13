@@ -98,8 +98,8 @@ public static class CostPoolGenerator {
                 rng.Add(new(ItemID.FallenStar, 5), 0.5);
                 rng.Add(new(ItemID.TatteredCloth, 3), 0.5);
                 rng.Add(new(ItemID.HardenedSand, 25));
-                rng.Add(new(WorldGen.WorldGenParam_Evil == 0 ? ItemID.EbonstoneBlock : ItemID.CrimstoneBlock, 15));
-                rng.Add(new(WorldGen.WorldGenParam_Evil == 0 ? ItemID.ShadowScale : ItemID.TissueSample, 5));
+                rng.Add(new(WorldGen.crimson ? ItemID.CrimstoneBlock : ItemID.EbonstoneBlock, 15));
+                rng.Add(new(WorldGen.crimson ? ItemID.TissueSample : ItemID.ShadowScale, 5));
                 rng.Add(new(ItemID.GoldCoin, 5));
                 rng.Add(new(ItemID.GoldCoin, 10), 0.25);
                 break;
@@ -118,7 +118,7 @@ public static class CostPoolGenerator {
                 rng.Add(new(ItemID.WaterCandle));
                 rng.Add(new(ItemID.SuspiciousLookingEye));
                 rng.Add(new(ItemID.MeteoriteBar, 10));
-                rng.Add(new(WorldGen.WorldGenParam_Evil == 0 ? ItemID.DemoniteBar : ItemID.CrimtaneBar, 10));
+                rng.Add(new(WorldGen.crimson ? ItemID.CrimtaneBar : ItemID.DemoniteBar, 15));
                 break;
 
         }

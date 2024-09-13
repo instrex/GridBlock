@@ -85,15 +85,15 @@ public class RewardSurpriseProjectile : ItemShowerSurpriseProjectile {
 
         // common rewards
         rng.Add((ItemID.HerbBag, Main.rand.Next(1, 5)), 0.25);
-        rng.Add((ItemID.IronskinPotion, Main.rand.Next(2, 5) * 5), 0.25);
-        rng.Add((ItemID.ArcheryPotion, Main.rand.Next(2, 5) * 5), 0.25);
-        rng.Add((ItemID.InfernoPotion, Main.rand.Next(2, 5) * 5), 0.25);
-        rng.Add((ItemID.EndurancePotion, Main.rand.Next(2, 5) * 5), 0.25);
-        rng.Add((ItemID.SpelunkerPotion, Main.rand.Next(2, 5) * 5), 0.25);
-        rng.Add((ItemID.WrathPotion, Main.rand.Next(3, 5) * 5), 0.25);
-        rng.Add((ItemID.LuckPotion, Main.rand.Next(1, 3) * 5), 0.15);
-        rng.Add((ItemID.LuckPotionLesser, Main.rand.Next(3, 5) * 5), 0.2);
-        rng.Add((ItemID.LuckPotionGreater, Main.rand.Next(1, 5)), 0.1);
+        rng.Add((ItemID.IronskinPotion, Main.rand.Next(2, 5) * 3), 0.25);
+        rng.Add((ItemID.ArcheryPotion, Main.rand.Next(2, 5) * 3), 0.25);
+        rng.Add((ItemID.InfernoPotion, Main.rand.Next(2, 5) * 3), 0.25);
+        rng.Add((ItemID.EndurancePotion, Main.rand.Next(2, 5) * 3), 0.25);
+        rng.Add((ItemID.SpelunkerPotion, Main.rand.Next(2, 5) * 3), 0.25);
+        rng.Add((ItemID.WrathPotion, Main.rand.Next(3, 5) * 3), 0.25);
+        rng.Add((ItemID.LuckPotion, Main.rand.Next(1, 3) * 3), 0.15);
+        rng.Add((ItemID.LuckPotionLesser, Main.rand.Next(3, 5) * 2), 0.2);
+        rng.Add((ItemID.LuckPotionGreater, Main.rand.Next(1, 3)), 0.1);
 
         return rng.Get();
     }
