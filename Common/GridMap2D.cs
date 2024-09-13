@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Terraria;
 using Terraria.ModLoader;
@@ -59,6 +60,17 @@ public class GridMap2D<T>(int chunkSize, int worldBoundsX, int worldBoundsY) {
         }
 
         return _values[id];
+    }
+
+    /// <summary>
+    /// Enumerates chunks that meet provided predicate conditions.
+    /// </summary>
+    public IEnumerable<T> GetAll(Predicate<T> predicate) {
+        for (var i = 0; i < Length; i++) {
+            var val = _values[i];
+            if (val != null && predicate(val))
+                yield return val;
+        }
     }
 
     public void Fill(Func<GridMap2D<T>, int, T> constructor) {
