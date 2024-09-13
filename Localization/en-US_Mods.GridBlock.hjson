@@ -6,6 +6,8 @@ Projectiles: {
 	OreSpawnSurpriseProjectile.DisplayName: Ore Spawn Surprise Projectile
 	SkeletalSurpriseProjectile.DisplayName: Skeletal Surprise Projectile
 	ZombieSurpriseProjectile.DisplayName: Zombie Surprise Projectile
+	StarFallSurpriseProjectile.DisplayName: Star Fall Surprise Projectile
+	NotTheBeesSurpriseProjectile.DisplayName: Not The Bees Surprise Projectile
 }
 
 HoldToUnlock: Hold to unlock!

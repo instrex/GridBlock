@@ -73,6 +73,10 @@ public class GridBlockPlayer : ModPlayer {
         return true;
     }
 
+    public override void UpdateEquips() {
+        Player.pickSpeed *= 0.76f;
+    }
+
     GridBlockChunk[,] _adjChunks = new GridBlockChunk[3, 3];
     int _adjUpdateTimer;
 
@@ -81,20 +85,6 @@ public class GridBlockPlayer : ModPlayer {
         // VerticalCollisionCheck();
 
         CheckCollision();
-
-        return;
-
-        var gridWorld = ModContent.GetInstance<GridBlockWorld>();
-        if (gridWorld.Chunks is null)
-            return;
-
-        var tileCoord = Player.Center.ToTileCoordinates();
-        if (gridWorld.Chunks.GetByTileCoord(tileCoord)?.IsUnlocked == false) {
-            if (_stuckTimer++ > 5) {
-                Player.Teleport(new Vector2(Main.spawnTileX * 16, (Main.spawnTileY - 3) * 16), 2);
-                _stuckTimer = 0;
-            }
-        } else _stuckTimer = 0;
     }
 
     void CheckCollision() {
@@ -102,7 +92,7 @@ public class GridBlockPlayer : ModPlayer {
             return;
 
         // update adj chunks first
-        if (_adjUpdateTimer-- <= 0) {
+        if (_adjUpdateTimer-- <= 0 || Player.oldPosition.Distance(Player.position) > 120) {
             var center = chunks.GetByWorldPos(Player.Center).ChunkCoord;
             for (var i = 0; i < 3; i++) {
                 for (var k = 0; k < 3; k++) {
@@ -110,7 +100,7 @@ public class GridBlockPlayer : ModPlayer {
                 }
             }
 
-            _adjUpdateTimer = 10;
+            _adjUpdateTimer = 5;
         }
 
         var collisionOccured = false;
@@ -158,6 +148,7 @@ public class GridBlockPlayer : ModPlayer {
             }
         }
 
+        // when stuck in a chunk somehow
         var current = _adjChunks[1, 1];
         if (current != null && !current.IsUnlocked) {
             Player.Hurt(new() { Damage = 5, DamageSource = PlayerDeathReason.LegacyDefault() });

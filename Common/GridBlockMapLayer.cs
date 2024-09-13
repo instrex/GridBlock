@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.GameContent;
+using Terraria.ID;
 using Terraria.Map;
 using Terraria.ModLoader;
 using Terraria.UI;
@@ -56,16 +57,16 @@ public class GridBlockMapLayer : ModMapLayer {
             }
 
             if (chunk.UnlockCost != null) {
+                var anim = Main.itemAnimations[chunk.UnlockCost.type];
                 context.Draw(chunk.Group == CostGroup.Expensive ? ModContent.Request<Texture2D>("GridBlock/Assets/RewardIndicator").Value 
                     : TextureAssets.Item[chunk.UnlockCost.type].Value,
 
                     pos + new Vector2(gridBlock.Chunks.CellSize * 0.5f),
                     Color.White,
-                    new SpriteFrame(1, 1, 0, 0),
+                    new SpriteFrame(1, (byte)(anim is null ? 1 : anim.FrameCount), 0, 0),
                     scale * 0.5f, scale * 0.5f,
                     Alignment.Center);
             }
-            
         }
     }
 }

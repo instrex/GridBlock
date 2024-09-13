@@ -46,7 +46,7 @@ public static class CostPoolGenerator {
                 rng.Add(new(ItemID.Torch, 40), 0.25);
                 rng.Add(new(ItemID.Daybloom, 3));
                 rng.Add(new(ItemID.Sunflower, 1), 0.5);
-                rng.Add(new(ItemID.Mushroom, 15));
+                rng.Add(new(ItemID.Mushroom, 3));
                 rng.Add(new(ItemID.StoneBlock, 25));
                 rng.Add(new(ItemID.StoneBlock, 50), 0.25);
                 rng.Add(new(ItemID.MudBlock, 25));

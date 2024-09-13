@@ -1,14 +1,13 @@
-TorchSurprise: Да будет свет
-SlimeSurprise: Липкая ситуация
-RewardSurprise: Награда за смелость
-HealingSurprise: Хилимся-живём
-GenderSwapSurprise: Ой! Смена пола
-
-UnlockNeighbourSurprise: {
-	$parentVal: Аттракцион невиданной щедрости
-	Tip: (еще один чанк рядом открыт!)
-}
-
-PlayerBuffSpeedSurprise: Вперёёёёёд
-SkeletalSurprise: Мегалования
-ZombieSurprise: Ходячие мертвецы
+TorchSurprise: Let there be light
+SlimeSurprise: Sticky situation
+RewardSurprise: For the Worthy
+HealingSurprise: Heal up
+GenderSwapSurprise: Oops! Gender change
+UnlockNeighbourSurprise: It's free real estate
+PlayerBuffSpeedSurprise: Gotta go fast
+SkeletalSurprise: Megalovania
+ZombieSurprise: The Walking Dead
+DungeonGuardianSurprise: Wake up
+StarFallSurprise: Astral diarrhea
+TimeChangeDaySurprise: Good morning
+TimeChangeNightSurprise: Sweet dreams
