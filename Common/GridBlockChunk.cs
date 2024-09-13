@@ -253,9 +253,9 @@ public class GridBlockChunk(int Id) {
     /// <summary>
     /// Attempts to unlock this chunk.
     /// </summary>
-    public void Unlock(Player player, bool triggerSurprises = true) {
+    public void Unlock(Player player, bool triggerSurprises = true, bool noCost = false) {
         // consume unlock ingredients
-        if (player != null && UnlockCost != null) 
+        if (!noCost && player != null && UnlockCost != null) 
             ConsumeUnlockRequirements(player);
         
         SoundEngine.PlaySound(SoundID.Unlock);

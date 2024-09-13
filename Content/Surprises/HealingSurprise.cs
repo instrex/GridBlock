@@ -2,10 +2,16 @@
 using Terraria.Audio;
 using Terraria.ID;
 using Terraria;
+using GridBlock.Common;
 
 namespace GridBlock.Content.Surprises;
 
-public class HealingSurprise : GridBlockSurprise.ProjectileSpawner<HealingSurpriseProjectile> { }
+public class HealingSurprise : GridBlockSurprise.ProjectileSpawner<HealingSurpriseProjectile> {
+    public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
+        return player.statLife < player.statLifeMax2;
+    }
+}
+
 public class HealingSurpriseProjectile : ItemShowerSurpriseProjectile {
     public override void SetDefaults() {
         base.SetDefaults();

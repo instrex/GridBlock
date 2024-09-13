@@ -40,6 +40,8 @@ public class GridBlockUi {
         var radiusX = Main.screenWidth / 16 / gridWorld.Chunks.CellSize;
         var radiusY = Main.screenHeight / 16 / gridWorld.Chunks.CellSize;
 
+        const float UnlockHoldDuration = 90f;
+
         for (var x = -radiusX; x <= radiusX; x++) {
             for (var y = -radiusY; y <= radiusY; y++) {
                 var nearbyChunkCoord = currentChunkCoord + new Point(x, y);
@@ -101,7 +103,7 @@ public class GridBlockUi {
                     var iconOffsetY = 0f;
 
                     if (canUnlockChunk) {
-                        var scale = _lastHoveredChunk == nearbyChunk ? 1f + (_holdDuration / 60f) * 0.25f : 1f;
+                        var scale = _lastHoveredChunk == nearbyChunk ? 1f + (_holdDuration / UnlockHoldDuration) * 0.25f : 1f;
                         var text = Language.GetTextValue("Mods.GridBlock.HoldToUnlock");
                         var size = FontAssets.MouseText.Value.MeasureString(text);
                         var pos = itemIconPos + new Vector2(size.X * -0.5f * scale, 76) - Main.screenPosition;
@@ -109,14 +111,14 @@ public class GridBlockUi {
                             pos, Color.DarkGray, scale, 0f);
 
                         if (_holdDuration > 0 && _lastHoveredChunk == nearbyChunk) {
-                            var substr = text[..(int)(text.Length * (_holdDuration / 60f))];
+                            var substr = text[..(int)(text.Length * (_holdDuration / UnlockHoldDuration))];
                             Utils.DrawBorderString(Main.spriteBatch, substr, pos, Color.Gold, scale, 0f);
 
                             for (var i = 0; i < 4; i++) {
                                 Utils.DrawBorderString(Main.spriteBatch, substr, pos 
                                     + (i * MathHelper.PiOver2 + Main.GlobalTimeWrappedHourly).ToRotationVector2()
                                     * (4), 
-                                    Color.Gold with { A = 0 } * 0.35f * (_holdDuration / 60f), scale, 0f);
+                                    Color.Gold with { A = 0 } * 0.35f * (_holdDuration / UnlockHoldDuration), scale, 0f);
                             }
                         }
 
@@ -139,10 +141,11 @@ public class GridBlockUi {
                     }
 
                     if (canUnlockChunk && isHoveringChunk) {
-                        if (Main.mouseLeft) _holdDuration += 1f;
-                        else _holdDuration = 0;
+                        if (Main.mouseLeft) {
+                            _holdDuration += 1f;
+                        } else _holdDuration = 0;
 
-                        if (_holdDuration >= 60.0f) {
+                        if (_holdDuration >= UnlockHoldDuration) {
                             nearbyChunk.Unlock(Main.LocalPlayer);
                             _lastHoveredChunk = null;
                             _holdDuration = 0;

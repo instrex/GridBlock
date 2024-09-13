@@ -4,40 +4,36 @@ using Terraria;
 using GridBlock.Common;
 using Terraria.Localization;
 using Microsoft.Xna.Framework;
+using System.Collections.Generic;
 
 namespace GridBlock.Content.Surprises;
 
 public class UnlockNeighbourSurprise : GridBlockSurprise {
+    static bool CheckChunk(Point chunkCoord) {
+        var chunk = GridBlockWorld.Instance.Chunks.GetByChunkCoord(chunkCoord);
+        return chunk != null && !chunk.IsUnlocked && chunk.Group != Common.Costs.CostGroup.Expensive;
+    }
+
     // can trigger if at least 1 neighbour is not unlocked yet
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
-        for (var i = -1; i < 2; i++)
-            for (var k = -1; k < 2; k++) {
-                if (i == 0 && k == 0) continue;
-
-                var neighbour = GridBlockWorld.Instance.Chunks.GetByChunkCoord(chunk.ChunkCoord + new Microsoft.Xna.Framework.Point(i, k));
-                if (neighbour != null && !neighbour.IsUnlocked) return true;
-            }
-
-        return false;
+        return CheckChunk(chunk.ChunkCoord + new Point(1, 0)) 
+            || CheckChunk(chunk.ChunkCoord + new Point(-1, 0))
+            || CheckChunk(chunk.ChunkCoord + new Point(0, 1))
+            || CheckChunk(chunk.ChunkCoord + new Point(0, -1));
     }
 
     public override void Trigger(Player player, GridBlockChunk chunk) {
-        var neighboursToConsider = new WeightedRandom<GridBlockChunk>();
-        for (var i = -1; i < 2; i++)
-            for (var k = -1; k < 2; k++)  {
-                if (i == 0 && k == 0) continue;
+        var neighboursToConsider = new List<GridBlockChunk>();
+        var chunks = GridBlockWorld.Instance.Chunks;
+        for (var i = 0; i < 2; i++) {
+            var top = chunks.GetByChunkCoord(chunk.ChunkCoord + new Point(i * 2 - 1, 0));
+            if (CheckChunk(top.ChunkCoord)) neighboursToConsider.Add(top);
 
-                var neighbour = GridBlockWorld.Instance.Chunks.GetByChunkCoord(chunk.ChunkCoord + new Microsoft.Xna.Framework.Point(i, k));
-                if (!neighbour.IsUnlocked && neighbour.Group != Common.Costs.CostGroup.Expensive) neighboursToConsider.Add(neighbour);
-            }
+            var btm = chunks.GetByChunkCoord(chunk.ChunkCoord + new Point(i * -2 - 1, 0));
+            if (CheckChunk(btm.ChunkCoord)) neighboursToConsider.Add(btm);
+        }
 
-        var chosenOne = neighboursToConsider.Get();
+        var chosenOne = neighboursToConsider[Main.rand.Next(neighboursToConsider.Count)];
         chosenOne.Unlock(player);
-
-        var origin = (chunk.WorldCoordTopLeft + new Vector2(GridBlockWorld.Instance.Chunks.CellSize * 16 * 0.5f)).ToPoint();
-        //CombatText.NewText(new(origin.X - 16, origin.Y + 75, 32, 2), Color.Gold * 0.75f,
-        //    Language.GetTextValue($"Mods.GridBlock.Surprises.UnlockNeighbourSurprise.Tip"),
-        //    true);
     }
 }
-

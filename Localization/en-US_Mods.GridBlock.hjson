@@ -8,6 +8,8 @@ Projectiles: {
 	ZombieSurpriseProjectile.DisplayName: Zombie Surprise Projectile
 	StarFallSurpriseProjectile.DisplayName: Star Fall Surprise Projectile
 	NotTheBeesSurpriseProjectile.DisplayName: Not The Bees Surprise Projectile
+	EyeSurpriseProjectile.DisplayName: Eye Surprise Projectile
+	HellHordeSurpriseProjectile.DisplayName: Hell Horde Surprise Projectile
 }
 
 HoldToUnlock: Hold to unlock!

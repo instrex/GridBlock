@@ -98,7 +98,7 @@ public class TeleportationItemsHack : ModSystem {
         self.Teleport(tileCoord.ToWorldCoordinates(14, 24), 2);
     }
 
-    bool TryGetRandomPointInChunk(GridBlockChunk chunk, out Point tileCoord) {
+    public static bool TryGetRandomPointInChunk(GridBlockChunk chunk, out Point tileCoord) {
         var chunks = GridBlockWorld.Instance.Chunks;
         var spotRng = new WeightedRandom<Point>();
         tileCoord = Point.Zero;

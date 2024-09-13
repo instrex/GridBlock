@@ -10,7 +10,7 @@ namespace GridBlock.Content.Surprises;
 public class ZombieSurprise : GridBlockSurprise.ProjectileSpawner<ZombieSurpriseProjectile> {
     public override bool IsNegative => true;
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
-        return !Main.dayTime || chunk.TileCoord.Y > Main.worldSurface;
+        return !Main.dayTime;
     }
 }
 
@@ -27,7 +27,7 @@ public class ZombieSurpriseProjectile : AmbushSurpriseProjectile {
         npc.velocity.Y = Main.rand.NextFloat(-4, -8);
 
         for (var i = 0; i < 7; i++) {
-            var dust = Dust.NewDustDirect(npc.position, npc.width, npc.height, DustID.Bone, 2f, 2f);
+            var dust = Dust.NewDustDirect(npc.position, npc.width, npc.height, DustID.Blood, 2f, 2f);
             dust.velocity.Y = Main.rand.NextFloat(-2, -6);
         }
     }

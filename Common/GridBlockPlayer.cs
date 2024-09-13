@@ -82,9 +82,6 @@ public class GridBlockPlayer : ModPlayer {
     int _adjUpdateTimer;
 
     public override void PreUpdateMovement() {
-        // HorizontalCollisionCheck();
-        // VerticalCollisionCheck();
-
         CheckCollision();
     }
 
@@ -96,9 +93,6 @@ public class GridBlockPlayer : ModPlayer {
 
         // update adj chunks first
         if (_lastChunk != current && current.IsUnlocked /*(_adjUpdateTimer-- <= 0 || Player.oldPosition.Distance(Player.position) > 120)*/) {
-            Main.NewText("ADJ UPDATE");
-
-
             var center = chunks.GetByWorldPos(Player.Center).ChunkCoord;
             for (var i = 0; i < 3; i++) {
                 for (var k = 0; k < 3; k++) {
@@ -114,8 +108,15 @@ public class GridBlockPlayer : ModPlayer {
         var top = _adjChunks[1, 0];
         if (top != null && !top.IsUnlocked) {
             if (Player.Top.Y < top.WorldBounds.Bottom) {
-                Player.Top = Player.Top with { Y = top.WorldBounds.Bottom + 2 };
-                Player.gfxOffY = 0;
+                if (Player.gravDir > 0) {
+                    Player.Top = Player.Top with { Y = top.WorldBounds.Bottom + 2 };
+                    Player.gfxOffY = 0;
+                } else {
+                    Player.Top = Player.Top with { Y = top.WorldBounds.Bottom - 2 };
+                    Player.velocity.Y = Player.justJumped ? Player.velocity.Y : 0;
+                    Player.gfxOffY = 0;
+                }
+                
                 collisionOccured = true;
             }
         }
@@ -123,9 +124,14 @@ public class GridBlockPlayer : ModPlayer {
         var bottom = _adjChunks[1, 2];
         if (bottom != null && !bottom.IsUnlocked) {
             if (Player.Bottom.Y > bottom.WorldBounds.Top) {
-                Player.Bottom = Player.Bottom with { Y = bottom.WorldBounds.Top + 2 };
-                Player.velocity.Y = Player.justJumped ? Player.velocity.Y : 0;
-                Player.gfxOffY = 0;
+                if (Player.gravDir > 0) {
+                    Player.Bottom = Player.Bottom with { Y = bottom.WorldBounds.Top + 2 };
+                    Player.velocity.Y = Player.justJumped ? Player.velocity.Y : 0;
+                    Player.gfxOffY = 0;
+                } else {
+                    Player.Bottom = Player.Bottom with { Y = bottom.WorldBounds.Top + 2 };
+                    Player.gfxOffY = 0;
+                }
             }
         }
 
@@ -198,9 +204,13 @@ public class GridBlockPlayer : ModPlayer {
 
         // when stuck in a chunk somehow
         if (current != null && !current.IsUnlocked) {
-            // fiasco
-            Player.Hurt(new() { Damage = 5, DamageSource = PlayerDeathReason.LegacyDefault() });
-            Player.RemoveAllGrapplingHooks();
+            if (_stuckTimer++ >= 2) {
+
+                // fiasco
+                Player.Hurt(new() { Damage = 5, DamageSource = PlayerDeathReason.LegacyDefault() });
+                Player.RemoveAllGrapplingHooks();
+            }
+
 
             //// find distances to the closest edges
             //int[] paths = [
@@ -209,7 +219,7 @@ public class GridBlockPlayer : ModPlayer {
             //    bottom?.IsUnlocked == true  ? bottom.WorldBounds.Top - (int)Player.Bottom.Y : int.MaxValue,
             //    left?.IsUnlocked == true    ? (int)Player.Left.X - left.WorldBounds.Right   : int.MaxValue,
             //];
-            
+
             //var closestIndex = 0;
             //var closestDist = int.MaxValue;
 
@@ -244,13 +254,13 @@ public class GridBlockPlayer : ModPlayer {
 
             //// force update adjChunks
             //_adjUpdateTimer = 0;
-        }
+        } else _stuckTimer = 0;
 
         _lastChunk = current;
 
 
         if (collisionOccured) {
-            Main.NewText($"Cock check occured: {_adjUpdateTimer}ms");
+            // Main.NewText($"Cock check occured: {_adjUpdateTimer}ms");
             Player.RemoveAllGrapplingHooks();
         }
     }
