@@ -24,6 +24,9 @@ public class GridBlockMapLayer : ModMapLayer {
 
         for (var i = 0; i < gridBlock.Chunks.Bounds.X * gridBlock.Chunks.Bounds.Y; i++) {
             var coord = new Point(i % gridBlock.Chunks.Bounds.X, i / gridBlock.Chunks.Bounds.X);
+            if (coord.Y == 0 || coord.Y == gridBlock.Chunks.Bounds.Y - 1 || coord.X == 0 || coord.X == gridBlock.Chunks.Bounds.X - 1)
+                continue;
+
             var pos = new Vector2(coord.X * gridBlock.Chunks.CellSize, coord.Y * gridBlock.Chunks.CellSize);
 
             var chunk = gridBlock.Chunks.GetById(i);
@@ -32,12 +35,8 @@ public class GridBlockMapLayer : ModMapLayer {
                 continue;
 
             var color = chunk.Group switch {
-                CostGroup.Beginner => Color.Green,
-                CostGroup.Common => Color.Yellow,
-                CostGroup.Advanced => Color.Orange,
-                CostGroup.Adventure => Color.Red,
                 CostGroup.Expensive => Color.Magenta,
-                _ => Color.White
+                _ => Color.Red * 0.5f
             };
 
             if (Main.mapFullscreen) {

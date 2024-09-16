@@ -24,7 +24,7 @@ public static class CostPoolGenerator {
 
             case CostGroup.Expensive:
                 rng.Add(new(ItemID.GoldCoin, 50));
-                break;
+                return rng;
 
             case CostGroup.Beginner:
                 rng.Add(new(WorldGen.SavedOreTiers.Iron == TileID.Iron ? ItemID.IronOre : ItemID.LeadOre, 5));
@@ -88,7 +88,7 @@ public static class CostPoolGenerator {
                 rng.Add(new(ItemID.Cloud, 15));
                 rng.Add(new(ItemID.Bone, 10));
                 rng.Add(new(ItemID.FossilOre, 3));
-                rng.Add(new(ItemID.FlinxFur, 3));
+                rng.Add(new(ItemID.FlinxFur, 3), 0.2);
                 rng.Add(new(ItemID.SpikyBall, 15));
                 rng.Add(new(ItemID.GlowingMushroom, 15));
                 rng.Add(new(ItemID.Granite, 25));

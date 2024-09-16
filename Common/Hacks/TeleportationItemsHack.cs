@@ -73,15 +73,7 @@ public class TeleportationItemsHack : ModSystem {
             return;
         }
 
-        var buffer = new List<GridBlockChunk>();
-
-        // get all unlocked chunks
-        for (var i = 0; i < chunks.Length; i++) {
-            var chunk = chunks.GetById(i);
-            if (chunk.IsUnlocked) {
-                buffer.Add(chunk);
-            }
-        }
+        var buffer = chunks.GetAll(c => c.IsUnlocked).ToList();
 
         if (buffer.Count <= 0)
             return;
@@ -91,12 +83,16 @@ public class TeleportationItemsHack : ModSystem {
         // find non-occupied cell
         for (var att = 0; att < 100; att++) {
             var target = buffer[Main.rand.Next(buffer.Count)];
-            if (!TryGetRandomPointInChunk(target, out tileCoord))
+            if (!TryGetRandomPointInChunk(target, out var newTileCoord))
                 continue;
+
+            tileCoord = newTileCoord;
         }
 
         self.Teleport(tileCoord.ToWorldCoordinates(14, 24), 2);
     }
+
+    static bool CheckValidTile(int x, int y) => !WorldGen.SolidOrSlopedTile(x, y) && Main.tile[x, y].LiquidAmount == 0;
 
     public static bool TryGetRandomPointInChunk(GridBlockChunk chunk, out Point tileCoord) {
         var chunks = GridBlockWorld.Instance.Chunks;
@@ -106,12 +102,12 @@ public class TeleportationItemsHack : ModSystem {
         for (var x = 0; x < chunks.CellSize - 2; x++)
             for (var y = 0; y < chunks.CellSize - 2; y++) {
                 var coord = chunk.TileCoord + new Point(x, y);
-                if (!WorldGen.SolidOrSlopedTile(coord.X, coord.Y) &&
-                    !WorldGen.SolidOrSlopedTile(coord.X + 1, coord.Y) &&
-                    !WorldGen.SolidOrSlopedTile(coord.X + 1, coord.Y + 1) &&
-                    !WorldGen.SolidOrSlopedTile(coord.X + 1, coord.Y + 2) &&
-                    !WorldGen.SolidOrSlopedTile(coord.X, coord.Y + 1) &&
-                    !WorldGen.SolidOrSlopedTile(coord.X, coord.Y + 2)) {
+                if (CheckValidTile(coord.X, coord.Y) &&
+                    CheckValidTile(coord.X + 1, coord.Y) &&
+                    CheckValidTile(coord.X + 1, coord.Y + 1) &&
+                    CheckValidTile(coord.X + 1, coord.Y + 2) &&
+                    CheckValidTile(coord.X, coord.Y + 1) &&
+                    CheckValidTile(coord.X, coord.Y + 2)) {
 
                     // fun
                     spotRng.Add(coord);

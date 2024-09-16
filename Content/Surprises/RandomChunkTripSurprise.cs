@@ -8,12 +8,23 @@ using GridBlock.Common.Hacks;
 namespace GridBlock.Content.Surprises;
 
 public class RandomChunkTripSurprise : GridBlockSurprise {
+    static bool ValidChunkCheck(GridBlockChunk chunk) {
+        var chunks = GridBlockWorld.Instance.Chunks;
+        return !chunk.IsUnlocked && chunk.Group != Common.Costs.CostGroup.Expensive &&
+            chunk.ChunkCoord.X != 0 && chunk.ChunkCoord.X != chunks.Bounds.X - 1 &&
+            chunk.ChunkCoord.Y != 0 && chunk.ChunkCoord.Y != chunks.Bounds.Y - 1;
+    }
+
+    public override float GetWeight(Player player, GridBlockChunk chunk) {
+        return 0.4f;
+    }
+
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) => GridBlockWorld.Instance.Chunks
-        .GetAll(c => !c.IsUnlocked && c.Group != Common.Costs.CostGroup.Expensive)
+        .GetAll(ValidChunkCheck)
         .Any();
 
     public override void Trigger(Player player, GridBlockChunk chunk) {
-        var chunks = GridBlockWorld.Instance.Chunks.GetAll(c => !c.IsUnlocked && c.Group != Common.Costs.CostGroup.Expensive)
+        var chunks = GridBlockWorld.Instance.Chunks.GetAll(ValidChunkCheck)
             .ToList();
 
         while (true) {
@@ -29,6 +40,8 @@ public class RandomChunkTripSurprise : GridBlockSurprise {
 
                 break;
             }
+
+            targetChunk.IsUnlocked = false;
         }
     }
 }

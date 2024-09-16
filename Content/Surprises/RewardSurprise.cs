@@ -52,7 +52,7 @@ public class RewardSurpriseProjectile : ItemShowerSurpriseProjectile {
         }
 
         // add life crystals often
-        if (player.statLifeMax < 400) rng.Add((ItemID.LifeCrystal, 1), 0.5);
+        if (player.statLifeMax < 400) rng.Add((ItemID.LifeCrystal, 1), 4.5);
         else if (NPC.downedMechBossAny) rng.Add((ItemID.LifeFruit, 1), 0.5);
 
         // add mana crystals sometimes
@@ -84,7 +84,7 @@ public class RewardSurpriseProjectile : ItemShowerSurpriseProjectile {
         }
 
         // common rewards
-        rng.Add((ItemID.HerbBag, Main.rand.Next(1, 5)), 0.25);
+        rng.Add((ItemID.HerbBag, Main.rand.Next(1, 5)), 0.05);
         rng.Add((ItemID.IronskinPotion, Main.rand.Next(2, 5) * 3), 0.25);
         rng.Add((ItemID.ArcheryPotion, Main.rand.Next(2, 5) * 3), 0.25);
         rng.Add((ItemID.InfernoPotion, Main.rand.Next(2, 5) * 3), 0.25);

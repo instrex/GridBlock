@@ -20,11 +20,12 @@ public abstract class ItemShowerSurpriseProjectile : SurpriseProjectile {
             Projectile.ai[1] = 0;
 
             for (var i = 0; i < 1000; i++) {
-                var tileCoord = Chunk.TileCoord + new Point(Main.rand.Next(GridBlockWorld.Instance.Chunks.CellSize), Main.rand.Next(GridBlockWorld.Instance.Chunks.CellSize));
+                var tileCoord = Chunk.TileCoord + new Point(2 + Main.rand.Next(GridBlockWorld.Instance.Chunks.CellSize - 4), 2 + Main.rand.Next(GridBlockWorld.Instance.Chunks.CellSize - 4));
                 if (CanSpawnItemAtLocation(tileCoord.ToWorldCoordinates(), tileCoord)) {
                     var (type, stack) = GetItemTypeAndStack();
                     var item = Item.NewItem(Projectile.GetSource_FromThis(), tileCoord.ToWorldCoordinates(), type, stack);
-                    Main.item[item].velocity.Y = -4;
+                    Main.item[item].velocity.Y = -2;
+                    Main.item[item].velocity.X = 0;
                     Main.item[item].GetGlobalItem<GridBlockItem>().IsGridBlockReward = true;
                     OnItemSpawned(Main.item[item]);
                     break;

@@ -258,10 +258,12 @@ public class GridBlockPlayer : ModPlayer {
 
         _lastChunk = current;
 
-
         if (collisionOccured) {
             // Main.NewText($"Cock check occured: {_adjUpdateTimer}ms");
             Player.RemoveAllGrapplingHooks();
+            if (Player.HasBuff(BuffID.TheTongue)) {
+                Player.Hurt(new() { Damage = 5, DamageSource = PlayerDeathReason.LegacyDefault() });
+            }
         }
     }
 }

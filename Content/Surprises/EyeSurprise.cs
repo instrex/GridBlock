@@ -10,7 +10,7 @@ namespace GridBlock.Content.Surprises;
 public class EyeSurprise : GridBlockSurprise.ProjectileSpawner<EyeSurpriseProjectile> {
     public override bool IsNegative => true;
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
-        return !Main.dayTime || chunk.TileCoord.Y < Main.worldSurface;
+        return !Main.dayTime && chunk.TileCoord.Y < Main.worldSurface;
     }
 }
 
@@ -45,6 +45,10 @@ public class EyeSurpriseProjectile : AmbushSurpriseProjectile {
         rng.Add(NPCID.GreenEye2);
         rng.Add(NPCID.PurpleEye);
         rng.Add(NPCID.PurpleEye2);
+
+        if (Main.hardMode) {
+            rng.Add(NPCID.WanderingEye, 4);
+        }
 
         return rng.Get();
     }

@@ -10,6 +10,9 @@ Projectiles: {
 	NotTheBeesSurpriseProjectile.DisplayName: Not The Bees Surprise Projectile
 	EyeSurpriseProjectile.DisplayName: Eye Surprise Projectile
 	HellHordeSurpriseProjectile.DisplayName: Hell Horde Surprise Projectile
+	HarpySurpriseProjectile.DisplayName: Harpy Surprise Projectile
+	IceHordeSurpriseProjectile.DisplayName: Ice Horde Surprise Projectile
+	JungleSurpriseProjectile.DisplayName: Jungle Surprise Projectile
 }
 
 HoldToUnlock: Hold to unlock!

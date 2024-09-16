@@ -27,10 +27,10 @@ public class UnlockNeighbourSurprise : GridBlockSurprise {
         var chunks = GridBlockWorld.Instance.Chunks;
         for (var i = 0; i < 2; i++) {
             var top = chunks.GetByChunkCoord(chunk.ChunkCoord + new Point(i * 2 - 1, 0));
-            if (CheckChunk(top.ChunkCoord)) neighboursToConsider.Add(top);
+            if (top != null && CheckChunk(top.ChunkCoord)) neighboursToConsider.Add(top);
 
-            var btm = chunks.GetByChunkCoord(chunk.ChunkCoord + new Point(i * -2 - 1, 0));
-            if (CheckChunk(btm.ChunkCoord)) neighboursToConsider.Add(btm);
+            var btm = chunks.GetByChunkCoord(chunk.ChunkCoord + new Point(0, i * -2 - 1));
+            if (btm != null && CheckChunk(btm.ChunkCoord)) neighboursToConsider.Add(btm);
         }
 
         var chosenOne = neighboursToConsider[Main.rand.Next(neighboursToConsider.Count)];

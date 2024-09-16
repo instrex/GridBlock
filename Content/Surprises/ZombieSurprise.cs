@@ -10,7 +10,7 @@ namespace GridBlock.Content.Surprises;
 public class ZombieSurprise : GridBlockSurprise.ProjectileSpawner<ZombieSurpriseProjectile> {
     public override bool IsNegative => true;
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
-        return !Main.dayTime;
+        return !Main.dayTime || chunk.TileCoord.Y > Main.worldSurface;
     }
 }
 
