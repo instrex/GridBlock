@@ -62,11 +62,15 @@ public class GridBlockWorld : ModSystem {
 
         Chunks = new GridMap2D<GridBlockChunk>(40, Main.maxTilesX, Main.maxTilesY);
         Chunks.Fill((map, id) => {
-            var group = GridBlockChunk.CalculateGroup(map, chunkRng, id, out var unlocked);
+            var chunk = new GridBlockChunk(id);
+            var group = GridBlockChunk.CalculateGroup(map, chunkRng, chunk, id, out var unlocked);
+            chunk.IsUnlocked  = unlocked;
+            chunk.Group = group;
 
-            var chunk = new GridBlockChunk(id) { Group = group, IsUnlocked = unlocked };
+            // save chunks that need their neighbours collapsed
             if (unlocked) chunksToCollapseNeighboursFor.Add(chunk);
 
+            // collapse cost immediately
             if (chunk.Group == CostGroup.Expensive) 
                 chunk.CollapseUnlockCost();
 

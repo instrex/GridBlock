@@ -16,7 +16,7 @@ public class RandomChunkTripSurprise : GridBlockSurprise {
     }
 
     public override float GetWeight(Player player, GridBlockChunk chunk) {
-        return 0.4f;
+        return 66.4f;
     }
 
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) => GridBlockWorld.Instance.Chunks
@@ -27,7 +27,7 @@ public class RandomChunkTripSurprise : GridBlockSurprise {
         var chunks = GridBlockWorld.Instance.Chunks.GetAll(ValidChunkCheck)
             .ToList();
 
-        while (true) {
+        for (var i = 0; i < 10000; i++) {
             var targetChunk = chunks[Main.rand.Next(chunks.Count)];
             targetChunk.IsUnlocked = true;
 
@@ -38,10 +38,14 @@ public class RandomChunkTripSurprise : GridBlockSurprise {
                 player.PotionOfReturnHomePosition = player.Bottom;
                 NetMessage.SendData(MessageID.PlayerControls, -1, player.whoAmI, null, player.whoAmI, 0f, 0f, 0f, 0, 0, 0);
 
-                break;
+                player.QuickSpawnItem(player.GetSource_FromThis(), ItemID.RecallPotion);
+
+                return;
             }
 
             targetChunk.IsUnlocked = false;
         }
+
+        GridBlockWorld.Instance.Mod.Logger.Warn("Couldn't find a place for 20-minute adventure!");
     }
 }

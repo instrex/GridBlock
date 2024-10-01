@@ -139,7 +139,7 @@ public class GridBlockUi {
 
                     var item = nearbyChunk.UnlockCost;
                     var playerHasItem = nearbyChunk.CheckUnlockRequirementsForPlayer(Main.LocalPlayer);
-                    var canUnlockChunk = playerHasItem && Main.LocalPlayer.Distance(worldBounds.Center()) < Main.screenHeight * 0.75f;
+                    var canUnlockChunk = playerHasItem && Main.LocalPlayer.Distance(worldBounds.Center()) < Main.screenHeight * 0.75f && !Main.LocalPlayer.dead;
                     var textColor = playerHasItem ? (canUnlockChunk && isHoveringChunk ? Color.Gold : Color.White) : Color.Lerp(Color.Gray, Color.Red, 0.25f + MathF.Sin(Main.GlobalTimeWrappedHourly * 4) * 0.125f);
 
                     if (!screenBounds.Contains(itemIconPos.ToPoint())) {

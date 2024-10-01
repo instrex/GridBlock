@@ -37,6 +37,29 @@ public class GridBlockChunk(int Id) {
 
     // determenistic variables
 
+    int? _emptyTileAmount;
+
+    public int EmptyTileAmount {
+        get {
+            if (_emptyTileAmount is not int emptyTileAmount) {
+                emptyTileAmount = 0;
+
+                // check all nearby tiles
+                for (var x = TileCoord.X; x <= TileCoord.X + GridBlockWorld.Instance.Chunks.CellSize; x++) {
+                    for (var y = TileCoord.Y; y <= TileCoord.Y + GridBlockWorld.Instance.Chunks.CellSize; y++) {
+                        if (!Framing.GetTileSafely(x, y).HasTile)
+                            emptyTileAmount++;
+                    }
+                }
+
+                // cache the result
+                _emptyTileAmount = emptyTileAmount;
+            }
+
+            return emptyTileAmount;
+        }
+    }
+
     /// <summary>
     /// Cost group this chunk is assigned to.
     /// </summary>
@@ -191,18 +214,7 @@ public class GridBlockChunk(int Id) {
     /// <summary>
     /// Calculate CostGroup for a given chunk.
     /// </summary>
-    public static CostGroup CalculateGroup(GridMap2D<GridBlockChunk> map, UnifiedRandom gridRng, int id, out bool unlocked) {
-        static bool CheckRegionSafety(Rectangle rect) {
-            for (var x = rect.Left; x <= rect.Right; x++) {
-                for (var y = rect.Top; y <= rect.Bottom; y++) {
-                    if (Framing.GetTileSafely(x, y) is { HasTile: true, TileType: var tileType } && GridBlockWorld.SafetyTileExclusionSet.Contains(tileType))
-                        return false;
-                }
-            }
-
-            return true;
-        }
-
+    public static CostGroup CalculateGroup(GridMap2D<GridBlockChunk> map, UnifiedRandom gridRng, GridBlockChunk chunk, int id, out bool unlocked) {
         var chunkCoord = map.ToChunkCoord(id);
         var normalizedCoord = new Vector2(chunkCoord.X / (float)map.Bounds.X, chunkCoord.Y / (float)map.Bounds.Y);
         var dist = MathF.Abs((normalizedCoord.X - 0.5f) / 0.5f);
@@ -235,7 +247,8 @@ public class GridBlockChunk(int Id) {
             return CostGroup.Common;
         }
 
-        if (gridRng.NextFloat() < 0.05f) {
+        // check for empty tiles first
+        if (gridRng.NextFloat() < 0.05f && chunk.EmptyTileAmount > 200) {
             return CostGroup.Expensive;
         }
 
@@ -309,4 +322,6 @@ public class GridBlockChunk(int Id) {
             Main.NewText(text, surprise.IsNegative ? Color.Red : Color.Gold);
         }
     }
+
+
 }
