@@ -14,6 +14,7 @@ namespace GridBlock.Common.Hacks;
 public class TeleportationItemsHack : ModSystem {
     public override void Load() {
         On_Player.TeleportationPotion += TeleportationPotion;
+        On_Player.Teleport += RandomTripTeleportHack;
         On_Player.MagicConch += MagicConch;
         On_Player.DemonConch += DemonConch;
     }
@@ -21,8 +22,17 @@ public class TeleportationItemsHack : ModSystem {
 
     public override void Unload() {
         On_Player.TeleportationPotion -= TeleportationPotion;
+        On_Player.Teleport -= RandomTripTeleportHack;
         On_Player.MagicConch -= MagicConch;
         On_Player.DemonConch -= DemonConch;
+    }
+
+    private void RandomTripTeleportHack(On_Player.orig_Teleport orig, Player self, Vector2 newPos, int Style, int extraInfo) {
+        orig(self, newPos, Style, extraInfo);
+        if (Style != TeleportationStyleID.PotionOfReturn)
+            return;
+
+        self.GetModPlayer<GridBlockPlayer>().TryCreateRandomTripPortalReturn(newPos);
     }
 
     private void DemonConch(On_Player.orig_DemonConch orig, Player self) {

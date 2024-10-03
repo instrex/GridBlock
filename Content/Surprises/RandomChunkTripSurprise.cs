@@ -16,7 +16,7 @@ public class RandomChunkTripSurprise : GridBlockSurprise {
     }
 
     public override float GetWeight(Player player, GridBlockChunk chunk) {
-        return 66.4f;
+        return 0.4f;
     }
 
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) => GridBlockWorld.Instance.Chunks
@@ -38,7 +38,9 @@ public class RandomChunkTripSurprise : GridBlockSurprise {
                 player.PotionOfReturnHomePosition = player.Bottom;
                 NetMessage.SendData(MessageID.PlayerControls, -1, player.whoAmI, null, player.whoAmI, 0f, 0f, 0f, 0, 0, 0);
 
-                player.QuickSpawnItem(player.GetSource_FromThis(), ItemID.RecallPotion);
+                // player.QuickSpawnItem(player.GetSource_FromThis(), ItemID.RecallPotion);
+
+                player.GetModPlayer<GridBlockPlayer>().PrepareRandomTripPortalTrigger(tileCoord.ToWorldCoordinates(14, 24), player.Bottom);
 
                 return;
             }

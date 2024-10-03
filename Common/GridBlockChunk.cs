@@ -320,19 +320,9 @@ public class GridBlockChunk(int Id) {
         var surprises = ModContent.GetContent<GridBlockSurprise>()
             .Where(s => s.CanBeTriggered(player, this));
 
-        var surpriseHistory = player.GetModPlayer<GridBlockPlayer>().SurpriseHistory;
         var eventRng = new WeightedRandom<GridBlockSurprise>(GridBlockWorld.Instance.GridSeed + Id * 2);
         foreach (var surprise in surprises) {
             var weight = surprise.GetWeight(player, this);
-
-            // scale weight based on how recently the event triggered
-            for (var i = 0; i < surpriseHistory.Count; i++) {
-                if (surpriseHistory[i] == surprise) {
-                    weight *= 1f - i / 5f;
-                    continue;
-                }
-            }
-
             if (weight <= 0) continue;
 
             eventRng.Add(surprise, weight * (surprise.IsNegative ? 0.75f : 1.0f));
@@ -341,9 +331,6 @@ public class GridBlockChunk(int Id) {
         if (eventRng.elements.Count > 0) {
             var surprise = eventRng.Get();
             surprise.Trigger(player, this);
-
-            // save surprise to history
-            player.GetModPlayer<GridBlockPlayer>().PushSurprise(surprise);
 
             var text = string.Concat(Language.GetTextValue($"Mods.GridBlock.Surprises.{surprise.GetType().Name}"), surprise.IsNegative ? "..." : "!");
 

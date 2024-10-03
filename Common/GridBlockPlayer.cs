@@ -21,42 +21,36 @@ public class GridBlockPlayer : ModPlayer {
     /// </summary>
     public HashSet<Item> RichChunkRewards { get; private set; } = [];
 
-    /// <summary>
-    /// History of all the surprises this player encountered.
-    /// </summary>
-    public List<GridBlockSurprise> SurpriseHistory { get; private set; } = [];
+    readonly GridBlockChunk[,] _adjChunks = new GridBlockChunk[3, 3];
+    GridBlockChunk _lastChunk;
 
     int _stuckTimer;
 
-    /// <summary>
-    /// Adds surprise into the buffer, additionally clearing it.
-    /// </summary>
-    public void PushSurprise(GridBlockSurprise surprise) {
-        SurpriseHistory.Insert(0, surprise);
-        if (SurpriseHistory.Count > 5) {
-            SurpriseHistory.RemoveAt(5);
-        }
+    Vector2 _randomTripPortalTrigger, _randomTripPortalDestination;
+    bool _hasRandomTripPortalInfo;
+    int _randomTripPortalTimer = -1;
+
+
+    public void PrepareRandomTripPortalTrigger(Vector2 randomTripPosition, Vector2 originPosition) {
+        _randomTripPortalTrigger = randomTripPosition;
+        _randomTripPortalDestination = originPosition;
+        _hasRandomTripPortalInfo = true;
+    }
+
+    public void TryCreateRandomTripPortalReturn(Vector2 newPos) {
+        if (!_hasRandomTripPortalInfo || _randomTripPortalTrigger != (newPos + new Vector2(10, 42)))
+            return;
+
+        _randomTripPortalTimer = 10;
+        _hasRandomTripPortalInfo = false;
     }
 
     public override void SaveData(TagCompound tag) {
         if (RichChunkRewards.Count > 0) tag[nameof(RichChunkRewards)] = RichChunkRewards.ToList();
-        if (SurpriseHistory.Count > 0) tag[nameof(SurpriseHistory)] = SurpriseHistory.Select(s => s.Id).ToList();
     }
 
     public override void LoadData(TagCompound tag) {
         RichChunkRewards = new(tag.TryGet<List<Item>>("RichChunkRewards", out var rewards) ? rewards : []);
-        if (tag.TryGet<List<string>>(nameof(SurpriseHistory), out var history)) {
-            var surprises = ModContent.GetContent<GridBlockSurprise>().ToList();
-            foreach (var entry in history) {
-                var instance = surprises.Find(s => s.Id == entry);
-                if (instance is null) {
-                    Mod.Logger.Warn($"Couldn't load entry from surprise history! ({entry})");
-                    continue;
-                }
-
-                SurpriseHistory.Add(instance);
-            }
-        }
     }
 
     public override IEnumerable<Item> AddStartingItems(bool mediumCoreDeath) {
@@ -73,19 +67,21 @@ public class GridBlockPlayer : ModPlayer {
         return true;
     }
 
+    // increase mining speed passively
     public override void UpdateEquips() {
         Player.pickSpeed *= 0.76f;
-    }
 
-    GridBlockChunk[,] _adjChunks = new GridBlockChunk[3, 3];
-    GridBlockChunk _lastChunk;
-    int _adjUpdateTimer;
+        if (_randomTripPortalTimer > 0) {
+            _randomTripPortalTimer--;
+            if (_randomTripPortalTimer <= 0) {
+                Player.PotionOfReturnOriginalUsePosition = _randomTripPortalDestination;
+                Player.PotionOfReturnHomePosition = _randomTripPortalTrigger;
+                NetMessage.SendData(MessageID.PlayerControls, -1, Player.whoAmI, null, Player.whoAmI, 0f, 0f, 0f, 0, 0, 0);
+            }
+        }
+    }
 
     public override void PreUpdateMovement() {
-        CheckCollision();
-    }
-
-    void CheckCollision() {
         if (GridBlockWorld.Instance.Chunks is not GridMap2D<GridBlockChunk> chunks)
             return;
 
@@ -99,8 +95,6 @@ public class GridBlockPlayer : ModPlayer {
                     _adjChunks[i, k] = chunks.GetByChunkCoord(center + new Point(i - 1, k - 1));
                 }
             }
-
-            _adjUpdateTimer = 5;
         }
 
         var collisionOccured = false;
@@ -116,7 +110,7 @@ public class GridBlockPlayer : ModPlayer {
                     Player.velocity.Y = Player.justJumped ? Player.velocity.Y : 0;
                     Player.gfxOffY = 0;
                 }
-                
+
                 collisionOccured = true;
             }
         }
@@ -211,49 +205,6 @@ public class GridBlockPlayer : ModPlayer {
                 Player.RemoveAllGrapplingHooks();
             }
 
-
-            //// find distances to the closest edges
-            //int[] paths = [
-            //    top?.IsUnlocked == true     ? (int)Player.Top.Y - top.WorldBounds.Bottom    : int.MaxValue,
-            //    right?.IsUnlocked == true   ? right.WorldBounds.Left - (int)Player.Right.X  : int.MaxValue,
-            //    bottom?.IsUnlocked == true  ? bottom.WorldBounds.Top - (int)Player.Bottom.Y : int.MaxValue,
-            //    left?.IsUnlocked == true    ? (int)Player.Left.X - left.WorldBounds.Right   : int.MaxValue,
-            //];
-
-            //var closestIndex = 0;
-            //var closestDist = int.MaxValue;
-
-            //// determine the closest edge
-            //for (var i = 0; i < 4; i++) {
-            //    if (paths[i] < closestDist) {
-            //        closestDist = paths[i];
-            //        closestIndex = i;
-            //    }
-            //}
-
-            //// adjust player pos accordingly
-            //switch (closestIndex) {
-            //    case 0:
-            //        Player.Bottom = Player.Bottom with { Y = top.WorldBounds.Bottom };
-            //        break;
-
-            //    case 2:
-            //        Player.Top = Player.Top with { Y = bottom.WorldBounds.Bottom };
-            //        break;
-
-            //    case 1:
-            //        Player.Left = Player.Left with { X = right.WorldBounds.Left };
-            //        break;
-
-            //    case 3:
-            //        Player.Right = Player.Right with { X = left.WorldBounds.Right };
-            //        break;
-            //}
-
-            //Main.NewText($"OUTCOCK {closestIndex}");
-
-            //// force update adjChunks
-            //_adjUpdateTimer = 0;
         } else _stuckTimer = 0;
 
         _lastChunk = current;
