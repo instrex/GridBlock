@@ -137,63 +137,94 @@ public class GridBlockChunk(int Id) {
         }
     }
 
-    public bool CheckUnlockRequirementsForPlayer(Player player) {
+    bool TryCheckInventory(Item[] items, int limit, ref int count) {
+        foreach (var item in items) {
+            if (item.type == UnlockCost.type) {
+                if ((count += item.stack) >= limit) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public bool CheckUnlockRequirementsForPlayer(Player player, out int storageContext) {
+        storageContext = -1;
+
         if (UnlockCost is null)
             return false;
 
         if (UnlockCost.IsACoin) {
-            switch (UnlockCost.type) {
-                case ItemID.GoldCoin:
-                    if (player.HasItem(ItemID.PlatinumCoin))
-                        return true;
-
-                    break;
-
-                case ItemID.SilverCoin:
-                    if (player.HasItem(ItemID.GoldCoin) || player.HasItem(ItemID.PlatinumCoin))
-                        return true;
-
-                    break;
-            }
+            storageContext = 0;
+            return player.CanAfford(UnlockCost.value);
         }
 
-        return player.CountItem(UnlockCost.type, UnlockCost.stack) >= UnlockCost.stack;
+        var itemCount = 0;
+
+        // check inventory
+        if (TryCheckInventory(player.inventory, UnlockCost.stack, ref itemCount)) {
+            storageContext = 0;
+            return true;
+        }
+
+        // check piggy bank
+        if (TryCheckInventory(player.bank.item, UnlockCost.stack, ref itemCount)) {
+            storageContext = 1;
+            return true;
+        }
+
+        // check safe
+        if (TryCheckInventory(player.bank2.item, UnlockCost.stack, ref itemCount)) {
+            storageContext = 2;
+            return true;
+        }
+
+        // check defender's forge
+        if (TryCheckInventory(player.bank3.item, UnlockCost.stack, ref itemCount)) {
+            storageContext = 3;
+            return true;
+        }
+
+        // check void vault
+        if (TryCheckInventory(player.bank4.item, UnlockCost.stack, ref itemCount)) {
+            storageContext = 4;
+            return true;
+        }
+
+        return false;
     }
 
     public void ConsumeUnlockRequirements(Player player) {
         if (UnlockCost is null)
             return;
 
-        if (UnlockCost.IsACoin && player.CountItem(UnlockCost.type, UnlockCost.stack) < UnlockCost.stack) {
-            switch (UnlockCost.type) {
-                case ItemID.SilverCoin:
-                    if (player.HasItem(ItemID.GoldCoin)) {
-                        player.ConsumeItem(ItemID.GoldCoin);
-                        player.QuickSpawnItem(player.GetSource_FromThis(), ItemID.SilverCoin, 100 - UnlockCost.stack);
-                    } 
-
-                    else if (player.HasItem(ItemID.PlatinumCoin)) {
-                        player.ConsumeItem(ItemID.PlatinumCoin);
-                        player.QuickSpawnItem(player.GetSource_FromThis(), ItemID.GoldCoin, 99);
-                        player.QuickSpawnItem(player.GetSource_FromThis(), ItemID.SilverCoin, 100 - UnlockCost.stack);
-                    }
-
-                    break;
-
-                case ItemID.GoldCoin:
-                    if (player.HasItem(ItemID.PlatinumCoin)) {
-                        player.ConsumeItem(ItemID.GoldCoin);
-                        player.QuickSpawnItem(player.GetSource_FromThis(), ItemID.GoldCoin, 100 - UnlockCost.stack);
-                    }
-
-                    break;
-            }
+        if (UnlockCost.IsACoin) {
+            player.PayCurrency(UnlockCost.value);
+            return;
         }
 
-        for (var i = 0; i < UnlockCost.stack; i++) 
-            player.ConsumeItem(UnlockCost.type);
-    }
+        var banks = player.inventory.Concat(player.bank.item)
+            .Concat(player.bank2.item)
+            .Concat(player.bank3.item)
+            .Concat(player.bank4.item)
+            .ToArray();
 
+        for (var i = 0; i < UnlockCost.stack; i++) {
+            var index = Array.FindIndex(banks, x => x.type == UnlockCost.type);
+
+            if (index == -1) {
+                GridBlockWorld.Instance.Mod.Logger.Warn($"Attempted to consume item '{UnlockCost.Name}', which the player didn't have...");
+                break;
+            }
+
+            var item = banks[index];
+            item.stack--;
+
+            if (item.stack <= 0)
+                item.TurnToAir();
+        }
+    }
 
     /// <summary>
     /// Returns this chunk's location in tile-space.

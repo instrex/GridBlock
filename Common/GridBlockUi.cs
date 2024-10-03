@@ -14,10 +14,13 @@ using Terraria.GameContent;
 using Microsoft.CodeAnalysis;
 using Terraria.Audio;
 using Terraria.ID;
+using Terraria.GameContent.UI;
 
 namespace GridBlock.Common;
 
 public class GridBlockUi {
+    public static bool IsHoveringChunk { get; private set; }
+
     GridBlockChunk _lastHoveredChunk;
     float _holdDuration;
     bool _waitForMouseDownBeforeUnlocking;
@@ -26,7 +29,7 @@ public class GridBlockUi {
 
     class ItemFlowAnimation {
         public Item item;
-        public int timer;
+        public float timer;
 
         public float rotation, rotationSpeed;
         public float arcAmount;
@@ -36,6 +39,8 @@ public class GridBlockUi {
 
     public void Draw() {
         var gridWorld = ModContent.GetInstance<GridBlockWorld>();
+        IsHoveringChunk = false;
+
         if (Main.LocalPlayer?.active != true || gridWorld.Chunks is null)
             return;
 
@@ -135,12 +140,13 @@ public class GridBlockUi {
 
                         currentlyHoveredChunk = nearbyChunk;
                         _lastHoveredChunk = nearbyChunk;
+                        IsHoveringChunk = true;
                     }
 
                     var item = nearbyChunk.UnlockCost;
-                    var playerHasItem = nearbyChunk.CheckUnlockRequirementsForPlayer(Main.LocalPlayer);
+                    var playerHasItem = nearbyChunk.CheckUnlockRequirementsForPlayer(Main.LocalPlayer, out var storageContext);
                     var canUnlockChunk = playerHasItem && Main.LocalPlayer.Distance(worldBounds.Center()) < Main.screenHeight * 0.75f && !Main.LocalPlayer.dead;
-                    var textColor = playerHasItem ? (canUnlockChunk && isHoveringChunk ? Color.Gold : Color.White) : Color.Lerp(Color.Gray, Color.Red, 0.25f + MathF.Sin(Main.GlobalTimeWrappedHourly * 4) * 0.125f);
+                    var textColor = playerHasItem ? (canUnlockChunk && isHoveringChunk ? Color.Gold : ItemRarity.GetColor(item.rare)) : Color.Lerp(Color.Gray, Color.Red, 0.25f + MathF.Sin(Main.GlobalTimeWrappedHourly * 4) * 0.125f);
 
                     if (!screenBounds.Contains(itemIconPos.ToPoint())) {
                         itemIconPos.X = Math.Clamp(itemIconPos.X,
@@ -171,6 +177,52 @@ public class GridBlockUi {
                     Main.DrawItemIcon(Main.spriteBatch, item, itemIconPos - Main.screenPosition,
                         playerHasItem ? Color.White : Color.Gray, 32f);
 
+                    // draw storage icon
+                    if (storageContext > 0) {
+                        var glowTex = ModContent.Request<Texture2D>("GridBlock/Assets/UnlockSlot_Glow").Value;
+
+                        var storageIcon = ContentSamples.ItemsByType[storageContext switch {
+                            2 => ItemID.Safe,
+                            3 => ItemID.DefendersForge,
+                            4 => ItemID.ClosedVoidBag,
+                            _ => ItemID.PiggyBank,
+                        }];
+
+                        var storageIconPos = itemIconPos + new Vector2(0, -42);
+
+                        var accentColor = storageContext switch {
+                            2 => Color.Gray,
+                            3 => Color.Cyan,
+                            4 => Color.Purple,
+                            _ => Color.Magenta,
+                        };
+
+                        Main.spriteBatch.Draw(glowTex,
+                            itemIconPos + new Vector2(-4) - Main.screenPosition,
+                            null,
+                            accentColor with { A = 0 } * 0.25f,
+                            0,
+                            new Vector2(21),
+                            1,
+                            0,
+                            0
+                        );
+
+                        Main.spriteBatch.Draw(slotTex,
+                            storageIconPos - Main.screenPosition,
+                            null,
+                            accentColor * 0.25f,
+                            0,
+                            new Vector2(21),
+                            0.75f,
+                            0,
+                            0
+                        );
+
+                        Main.DrawItemIcon(Main.spriteBatch, storageIcon, storageIconPos - Main.screenPosition,
+                            playerHasItem ? Color.White : Color.Gray, 24f);
+                    }
+
                     //ItemSlot.Draw(Main.spriteBatch, ref item, ItemSlot.Context.CreativeInfinite,
                     //    itemIconPos + new Vector2(-16) - Main.screenPosition, playerHasItem ? Color.White : Color.Gray);
 
@@ -191,7 +243,7 @@ public class GridBlockUi {
                             for (var i = 0; i < 4; i++) {
                                 Utils.DrawBorderString(Main.spriteBatch, substr, pos 
                                     + (i * MathHelper.PiOver2 + Main.GlobalTimeWrappedHourly).ToRotationVector2()
-                                    * (4), 
+                                    * 4, 
                                     Color.Gold with { A = 0 } * (0.15f + 0.1f * (_holdDuration / UnlockHoldDuration)), scale, 0f);
                             }
                         }
@@ -255,17 +307,30 @@ public class GridBlockUi {
             _holdDuration = 0;
         }
 
-        var shouldClearAnimBuffer = false;
+        var lightTex = ModContent.Request<Texture2D>("GridBlock/Assets/Light").Value;
+
         foreach (var anim in _itemFlow) {
-            var progress = anim.timer / 60f;
+            var progress = anim.timer / 30f;
 
             Main.GetItemDrawFrame(anim.item.type, out var tex, out var frame);
 
-            var pos = EaseHelper.SampleCubicBezier(anim.origin, 
+            var pos = EaseHelper.SampleCubicBezier(anim.origin,
                 Vector2.Lerp(anim.origin, anim.target, 0.5f) + anim.origin.DirectionTo(anim.target).RotatedBy(MathHelper.PiOver2) * anim.arcAmount * 260f,
                 anim.target, EaseHelper.SineInOut(progress));
 
             var scale = (1f - MathF.Abs(progress - 0.5f) / 0.5f);
+
+            Main.spriteBatch.Draw(lightTex,
+                pos - Main.screenPosition,
+                null,
+                ItemRarity.GetColor(anim.item.rare) with { A = 0 } * scale * 0.4f,
+                anim.rotation,
+                new Vector2(45),
+                scale,
+                0,
+                0
+            );
+
             Main.spriteBatch.Draw(tex,
                 pos - Main.screenPosition,
                 frame,
@@ -277,14 +342,18 @@ public class GridBlockUi {
                 0,
                 0
             );
+        }
+    }
 
-            if (++anim.timer >= 60f) shouldClearAnimBuffer = true;
+    public void Update(float deltaTime) {
+        var shouldClearAnimBuffer = false;
+        foreach (var anim in _itemFlow) {
+            anim.timer += deltaTime / (1.0f / 60);
+            if (anim.timer >= 60f) shouldClearAnimBuffer = true;
             anim.rotation += anim.rotationSpeed;
         }
 
         if (shouldClearAnimBuffer)
-        _itemFlow.RemoveAll(i => i.timer >= 60);
-
-        //Main.spriteBatch.End();
+            _itemFlow.RemoveAll(i => i.timer >= 60);
     }
 }

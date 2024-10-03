@@ -80,6 +80,13 @@ public class GridBlockWorld : ModSystem {
         chunksToCollapseNeighboursFor.ForEach(c => c.CollapseNeighboursUnlockCost());
     }
 
+    public override void PreUpdateDusts() {
+        if (GridBlockUi.IsHoveringChunk) {
+            Main.LocalPlayer.mouseInterface = true;
+            Main.blockMouse = true;
+        }
+    }
+
     public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers) {
         if (layers.FindIndex(l => l.Name == "Vanilla: Interface Logic 1") is int i and > -1) {
             layers.Insert(i, new LegacyGameInterfaceLayer("GridBlock: Chunks", () => {
@@ -87,6 +94,10 @@ public class GridBlockWorld : ModSystem {
                 return true;
             }));
         }
+    }
+
+    public override void UpdateUI(GameTime gameTime) {
+        _uiHelper.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
     }
 
     public override void SaveWorldData(TagCompound tag) {
