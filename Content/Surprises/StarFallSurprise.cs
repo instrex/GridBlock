@@ -14,7 +14,8 @@ namespace GridBlock.Content.Surprises;
 
 internal class StarFallSurprise : GridBlockSurprise {
     public override bool IsNegative => true;
-    public override bool CanBeTriggered(Player player, GridBlockChunk chunk) => !Main.dayTime && chunk.TileCoord.Y < Main.worldSurface;
+    public override bool CanBeTriggered(Player player, GridBlockChunk chunk) => 
+        chunk.EmptyTileAmount > 500 && !Main.dayTime && chunk.TileCoord.Y < Main.worldSurface;
     public override void Trigger(Player player, GridBlockChunk chunk) {
         Projectile.NewProjectileDirect(player.GetSource_FromThis(), chunk.WorldBounds.Center.ToVector2(), Vector2.Zero,
             ModContent.ProjectileType<StarFallSurpriseProjectile>(), 0, 0, player.whoAmI);
@@ -33,8 +34,8 @@ public class StarFallSurpriseProjectile : SurpriseProjectile {
             var proj = Projectile.NewProjectileDirect(Projectile.GetSource_FromThis(), Projectile.Center + new Vector2(Main.rand.NextFloat(-600, 600), Main.rand.NextFloat(-2900, -600)),
                 new Vector2(Main.rand.NextFloat(-4, 4), Main.rand.NextFloat(10, 15)), ProjectileID.FallingStar, 50, 2f, Projectile.owner);
             proj.friendly = false;
-            proj.hostile = true; 
-
+            proj.hostile = true;
+            proj.tileCollide = false;
             Projectile.ai[0] = 0;
         }
     }

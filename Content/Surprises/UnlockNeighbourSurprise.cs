@@ -9,28 +9,40 @@ using System.Collections.Generic;
 namespace GridBlock.Content.Surprises;
 
 public class UnlockNeighbourSurprise : GridBlockSurprise {
-    static bool CheckChunk(Point chunkCoord) {
-        var chunk = GridBlockWorld.Instance.Chunks.GetByChunkCoord(chunkCoord);
+    static bool CheckChunk(Point chunkCoord, out GridBlockChunk chunk) {
+        chunk = GridBlockWorld.Instance.Chunks.GetByChunkCoord(chunkCoord);
         return chunk != null && !chunk.IsUnlocked && chunk.Group != Common.Costs.CostGroup.Expensive;
+    }
+
+    public override float GetWeight(Player player, GridBlockChunk chunk) {
+        return 0.3f;
     }
 
     // can trigger if at least 1 neighbour is not unlocked yet
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
-        return CheckChunk(chunk.ChunkCoord + new Point(1, 0)) 
-            || CheckChunk(chunk.ChunkCoord + new Point(-1, 0))
-            || CheckChunk(chunk.ChunkCoord + new Point(0, 1))
-            || CheckChunk(chunk.ChunkCoord + new Point(0, -1));
+        return CheckChunk(chunk.ChunkCoord + new Point(1, 0), out _) 
+            || CheckChunk(chunk.ChunkCoord + new Point(-1, 0), out _)
+            || CheckChunk(chunk.ChunkCoord + new Point(0, 1), out _)
+            || CheckChunk(chunk.ChunkCoord + new Point(0, -1), out _);
     }
 
     public override void Trigger(Player player, GridBlockChunk chunk) {
         var neighboursToConsider = new List<GridBlockChunk>();
-        var chunks = GridBlockWorld.Instance.Chunks;
-        for (var i = 0; i < 2; i++) {
-            var top = chunks.GetByChunkCoord(chunk.ChunkCoord + new Point(i * 2 - 1, 0));
-            if (top != null && CheckChunk(top.ChunkCoord)) neighboursToConsider.Add(top);
+        if (CheckChunk(chunk.ChunkCoord + new Point(-1, 0), out var left))
+            neighboursToConsider.Add(left);
 
-            var btm = chunks.GetByChunkCoord(chunk.ChunkCoord + new Point(0, i * -2 - 1));
-            if (btm != null && CheckChunk(btm.ChunkCoord)) neighboursToConsider.Add(btm);
+        if (CheckChunk(chunk.ChunkCoord + new Point(1, 0), out var right))
+            neighboursToConsider.Add(right);
+
+        if (CheckChunk(chunk.ChunkCoord + new Point(0, 1), out var bottom))
+            neighboursToConsider.Add(bottom);
+
+        if (CheckChunk(chunk.ChunkCoord + new Point(0, -1), out var top))
+            neighboursToConsider.Add(top);
+
+        if (neighboursToConsider.Count == 0) {
+            GridBlockWorld.Instance.Mod.Logger.Warn("UnlockNeigbhourSurprise failed, no neighbouring chunks.");
+            return;
         }
 
         var chosenOne = neighboursToConsider[Main.rand.Next(neighboursToConsider.Count)];

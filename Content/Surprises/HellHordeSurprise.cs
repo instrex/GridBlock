@@ -10,7 +10,7 @@ namespace GridBlock.Content.Surprises;
 public class HellHordeSurprise : GridBlockSurprise.ProjectileSpawner<HellHordeSurpriseProjectile> {
     public override bool IsNegative => true;
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
-        return chunk.TileCoord.Y >= Main.UnderworldLayer;
+        return chunk.EmptyTileAmount > 100 && chunk.TileCoord.Y >= Main.UnderworldLayer;
     }
 }
 

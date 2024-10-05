@@ -21,10 +21,24 @@ public class GridBlockPlayer : ModPlayer {
     /// </summary>
     public HashSet<Item> RichChunkRewards { get; private set; } = [];
 
+
     readonly GridBlockChunk[,] _adjChunks = new GridBlockChunk[3, 3];
     GridBlockChunk _lastChunk;
 
     int _stuckTimer;
+
+
+    public string[] surpriseHistory = new string[5];
+
+    /// <summary>
+    /// Adds an entry to surprise history to avoid repetition.
+    /// </summary>
+    public void PushSurpriseHistory(string id) {
+        Array.Copy(surpriseHistory, 0, surpriseHistory, 1, 4);
+        surpriseHistory[0] = id;
+    }
+
+    #region Random Trip portal hack
 
     Vector2 _randomTripPortalTrigger, _randomTripPortalDestination;
     bool _hasRandomTripPortalInfo;
@@ -38,12 +52,17 @@ public class GridBlockPlayer : ModPlayer {
     }
 
     public void TryCreateRandomTripPortalReturn(Vector2 newPos) {
-        if (!_hasRandomTripPortalInfo || _randomTripPortalTrigger != (newPos + new Vector2(10, 42)))
+        var realX = (int)newPos.X + Player.Size.X / 2;
+        var realY = (int)newPos.Y + Player.Size.Y;
+
+        if (!_hasRandomTripPortalInfo || (int)_randomTripPortalTrigger.X != realX || (int)_randomTripPortalTrigger.Y != realY)
             return;
 
         _randomTripPortalTimer = 10;
         _hasRandomTripPortalInfo = false;
     }
+
+    #endregion
 
     public override void SaveData(TagCompound tag) {
         if (RichChunkRewards.Count > 0) tag[nameof(RichChunkRewards)] = RichChunkRewards.ToList();
@@ -119,9 +138,18 @@ public class GridBlockPlayer : ModPlayer {
         if (bottom != null && !bottom.IsUnlocked) {
             if (Player.Bottom.Y > bottom.WorldBounds.Top) {
                 if (Player.gravDir > 0) {
+                    if (Player.grapCount > 0 && Player.velocity.Y > 0) {
+                        Player.RemoveAllGrapplingHooks();
+                    }
+
                     Player.Bottom = Player.Bottom with { Y = bottom.WorldBounds.Top + 2 };
-                    Player.velocity.Y = Player.justJumped ? Player.velocity.Y : 0;
+                    Player.velocity.Y = Player.justJumped || (Player.grapCount > 0 && Player.velocity.Y < 0) ? Player.velocity.Y : 0;
                     Player.gfxOffY = 0;
+
+                    if (Player.shimmering) {
+                        Player.Hurt(new() { Damage = 5, DamageSource = PlayerDeathReason.LegacyDefault() });
+                    }
+
                 } else {
                     Player.Bottom = Player.Bottom with { Y = bottom.WorldBounds.Top + 2 };
                     Player.gfxOffY = 0;

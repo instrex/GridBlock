@@ -15,9 +15,9 @@ public abstract class AmbushSurpriseProjectile : SurpriseProjectile {
         var size = new Point(ContentSamples.NpcsByNetId[npcType].width / 16, ContentSamples.NpcsByNetId[npcType].height / 16);
 
         // check the rect for free tiles
-        for (var x = tileCoord.X; x < tileCoord.X + size.X; x++)
-            for (var y = tileCoord.Y; y < tileCoord.Y + size.Y; y++) {
-                if (WorldGen.SolidTile(x, y)) return false;
+        for (var x = tileCoord.X; x <= tileCoord.X + size.X; x++)
+            for (var y = tileCoord.Y; y <= tileCoord.Y + size.Y; y++) {
+                if (Framing.GetTileSafely(x, y) is { HasTile: true } or { LiquidType: not 0 }) return false;
             }
 
         return true;

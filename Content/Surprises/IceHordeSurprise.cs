@@ -10,7 +10,7 @@ namespace GridBlock.Content.Surprises;
 public class IceHordeSurprise : GridBlockSurprise.ProjectileSpawner<IceHordeSurpriseProjectile> {
     public override bool IsNegative => true;
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
-        return player.ZoneSnow;
+        return chunk.EmptyTileAmount > 100 && player.ZoneSnow;
     }
 }
 

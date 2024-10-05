@@ -10,7 +10,7 @@ namespace GridBlock.Content.Surprises;
 public class JungleSurprise : GridBlockSurprise.ProjectileSpawner<JungleSurpriseProjectile> {
     public override bool IsNegative => true;
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
-        return player.ZoneJungle;
+        return chunk.EmptyTileAmount > 100 && player.ZoneJungle;
     }
 }
 

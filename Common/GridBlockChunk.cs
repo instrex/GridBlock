@@ -47,7 +47,8 @@ public class GridBlockChunk(int Id) {
                 // check all nearby tiles
                 for (var x = TileCoord.X; x <= TileCoord.X + GridBlockWorld.Instance.Chunks.CellSize; x++) {
                     for (var y = TileCoord.Y; y <= TileCoord.Y + GridBlockWorld.Instance.Chunks.CellSize; y++) {
-                        if (!Framing.GetTileSafely(x, y).HasTile)
+                        var tile = Framing.GetTileSafely(x, y);
+                        if (!tile.HasTile && tile.LiquidType == 0)
                             emptyTileAmount++;
                     }
                 }
@@ -130,15 +131,36 @@ public class GridBlockChunk(int Id) {
     /// Called when any player is near the chunk.
     /// </summary>
     public void Update(Player player) {
-        if (Group == CostGroup.Expensive && UnlockCost != null) {
+        if (UnlockCost is null)
+            return;
+
+        if (Group == CostGroup.Expensive) {
             var plr = player.GetModPlayer<GridBlockPlayer>();
+            UnlockCost.type = ItemID.GoldCoin;
             UnlockCost.stack = (int)((Main.hardMode ? CostPoolGenerator.RewardChunkBasePriceHardmode :  CostPoolGenerator.RewardChunkBasePrice) 
                 * (1f + plr.RichChunkRewards.Count(i => RewardSurpriseProjectile.OneTimeRewards.Contains(i.type)) * CostPoolGenerator.RewardChunkIncrease));
+            UnlockCost.value = Item.buyPrice(gold: UnlockCost.stack);
+
+            return;
+        }
+
+        if (UnlockCost.IsACoin) {
+            var stack = UnlockCost.stack;
+            UnlockCost.value = stack * (UnlockCost.type switch {
+                ItemID.SilverCoin => 100,
+                ItemID.GoldCoin => 100 * 100,
+                ItemID.PlatinumCoin => 100 * 100 * 100,
+                _ => 1
+            });
         }
     }
 
-    bool TryCheckInventory(Item[] items, int limit, ref int count) {
-        foreach (var item in items) {
+    bool TryCheckInventory(Item[] items, int limit, ref int count, bool ignoreIndex58 = false) {
+        for (int i = 0; i < items.Length; i++) {
+            if (ignoreIndex58 && i == 58)
+                continue;
+
+            Item item = items[i];
             if (item.type == UnlockCost.type) {
                 if ((count += item.stack) >= limit) {
                     return true;
@@ -163,7 +185,7 @@ public class GridBlockChunk(int Id) {
         var itemCount = 0;
 
         // check inventory
-        if (TryCheckInventory(player.inventory, UnlockCost.stack, ref itemCount)) {
+        if (TryCheckInventory(player.inventory, UnlockCost.stack, ref itemCount, true)) {
             storageContext = 0;
             return true;
         }
@@ -323,6 +345,12 @@ public class GridBlockChunk(int Id) {
         var eventRng = new WeightedRandom<GridBlockSurprise>(GridBlockWorld.Instance.GridSeed + Id * 2);
         foreach (var surprise in surprises) {
             var weight = surprise.GetWeight(player, this);
+
+            // avoid repetition
+            if (Array.FindIndex(player.GetModPlayer<GridBlockPlayer>().surpriseHistory, i => i == surprise.Id) != -1) {
+                weight *= 0;
+            }
+
             if (weight <= 0) continue;
 
             eventRng.Add(surprise, weight * (surprise.IsNegative ? 0.75f : 1.0f));
@@ -332,6 +360,9 @@ public class GridBlockChunk(int Id) {
             var surprise = eventRng.Get();
             surprise.Trigger(player, this);
 
+            // save to history stack
+            player.GetModPlayer<GridBlockPlayer>().PushSurpriseHistory(surprise.Id);
+
             var text = string.Concat(Language.GetTextValue($"Mods.GridBlock.Surprises.{surprise.GetType().Name}"), surprise.IsNegative ? "..." : "!");
 
             // display funny text
@@ -340,6 +371,4 @@ public class GridBlockChunk(int Id) {
             Main.NewText(text, surprise.IsNegative ? Color.Red : Color.Gold);
         }
     }
-
-
 }

@@ -113,12 +113,13 @@ public static class CostPoolGenerator {
                 rng.Add(new(ItemID.BladeofGrass));
                 rng.Add(new(ItemID.NightsEdge));
                 rng.Add(new(ItemID.GuideVoodooDoll));
-                rng.Add(new(ItemID.EoCShield));
                 rng.Add(new(ItemID.CobaltShield));
                 rng.Add(new(ItemID.WaterCandle));
                 rng.Add(new(ItemID.SuspiciousLookingEye));
                 rng.Add(new(ItemID.MeteoriteBar, 10));
-                rng.Add(new(WorldGen.crimson ? ItemID.CrimtaneBar : ItemID.DemoniteBar, 15));
+                rng.Add(new(WorldGen.crimson ? ItemID.CrimtaneBar : ItemID.DemoniteBar, 5));
+
+                if (Main.expertMode) rng.Add(new(ItemID.EoCShield));
                 break;
 
         }

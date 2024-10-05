@@ -10,7 +10,7 @@ namespace GridBlock.Content.Surprises;
 public class EyeSurprise : GridBlockSurprise.ProjectileSpawner<EyeSurpriseProjectile> {
     public override bool IsNegative => true;
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
-        return !Main.dayTime && chunk.TileCoord.Y < Main.worldSurface;
+        return chunk.EmptyTileAmount > 100 && !Main.dayTime && chunk.TileCoord.Y < Main.worldSurface;
     }
 }
 

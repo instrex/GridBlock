@@ -57,9 +57,11 @@ public class GridBlockMapLayer : ModMapLayer {
 
             if (chunk.UnlockCost != null) {
                 var anim = Main.itemAnimations[chunk.UnlockCost.type];
-                context.Draw(chunk.Group == CostGroup.Expensive ? ModContent.Request<Texture2D>("GridBlock/Assets/RewardIndicator").Value 
-                    : TextureAssets.Item[chunk.UnlockCost.type].Value,
+                var tex = chunk.Group == CostGroup.Expensive ? 
+                    ModContent.Request<Texture2D>("GridBlock/Assets/RewardIndicator")
+                    : TextureAssets.Item[chunk.UnlockCost.type];
 
+                context.Draw(tex.Value,
                     pos + new Vector2(gridBlock.Chunks.CellSize * 0.5f),
                     Color.White,
                     new SpriteFrame(1, (byte)(anim is null ? 1 : anim.FrameCount), 0, 0),

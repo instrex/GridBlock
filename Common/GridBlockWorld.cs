@@ -85,6 +85,8 @@ public class GridBlockWorld : ModSystem {
             Main.LocalPlayer.mouseInterface = true;
             Main.blockMouse = true;
         }
+
+        
     }
 
     public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers) {

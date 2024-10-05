@@ -28,7 +28,7 @@ public class TorchSurprise : GridBlockSurprise.ProjectileSpawner<TorchSurprisePr
         if (numberOfSolidsOrWalls < 25) 
             return false;
         
-        return chunk.TileCoord.Y > Main.worldSurface || !Main.dayTime;
+        return chunk.EmptyTileAmount > 100 && (chunk.TileCoord.Y > Main.worldSurface || !Main.dayTime);
     }
 }
 
