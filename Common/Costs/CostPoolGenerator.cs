@@ -98,6 +98,11 @@ public static class CostPoolGenerator {
             new(ItemID.GoldCoin, 5),
             new(ItemID.GoldCoin, 10, 0.25),
             new(ItemID.WaterCandle),
+            new(ItemID.ManaCrystal, 1, 0.5),
+            new(ItemID.ManaCrystal, 3, 0.25),
+            new(Main.hardMode ? ItemID.WoodenCrateHard : ItemID.WoodenCrate, 1, 0.25),
+            new(Main.hardMode ? ItemID.IronCrateHard : ItemID.IronCrate, 1, 0.25),
+            new(Main.hardMode ? ItemID.GoldenCrateHard : ItemID.GoldenCrate, 1, 0.25),
         ];
 
         if (Main.hardMode) {
@@ -112,6 +117,7 @@ public static class CostPoolGenerator {
                 new(ItemID.SoulofFlight, 6),
                 new(ItemID.SoulofLight, 6),
                 new(ItemID.SoulofNight, 6),
+                new(ItemID.TurtleShell, 1, 0.25),
             ]);
 
             if (NPC.downedMechBoss1) advancedGroup.Add(new(ItemID.SoulofMight, 4));

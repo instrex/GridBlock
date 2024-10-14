@@ -17,3 +17,26 @@ Projectiles: {
 
 HoldToUnlock: Удерживайте для открытия!
 Reroll: Замена ({0})
+SurpriseTrigger: "{0} вызвал [{1}]!"
+
+Buffs: {
+	MysteryBuff: {
+		// DisplayName: It's a Mystery
+		// Description: You cannot see chunk unlock requirements!
+	}
+
+	CostIncreaseBuff: {
+		// DisplayName: Inflation
+		// Description: Everything is expensive!
+	}
+
+	SaleBuff: {
+		// DisplayName: Steam Sale
+		// Description: Time to clear your wishlist!
+	}
+
+	FomoBuff: {
+		// DisplayName: Fomo Buff
+		// Description: Mods.GridBlock.Buffs.FomoBuff.Description
+	}
+}

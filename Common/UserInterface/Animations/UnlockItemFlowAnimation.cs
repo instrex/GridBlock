@@ -14,7 +14,7 @@ public class UnlockItemFlowAnimation : IAnimation {
     public Item item;
     public float rotation, rotationSpeed;
     public float arcAmount;
-
+    public bool hidden;
     public Vector2 origin, target;
 
     public void Draw() {
@@ -42,7 +42,7 @@ public class UnlockItemFlowAnimation : IAnimation {
         Main.spriteBatch.Draw(tex,
             pos - Main.screenPosition,
             frame,
-            Color.White * scale,
+            (hidden ? Color.Black : Color.White) * scale,
             rotation,
             frame.Size() * 0.5f,
             /*progress < 0.2f ? progress / 0.2f : (progress >= 0.8f ? 1f - (progress - 0.8f) / 0.2f : 1f)*/

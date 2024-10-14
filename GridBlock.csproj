@@ -8,6 +8,7 @@
 		
 	</PropertyGroup>
 	<ItemGroup>
+	  <None Remove="Content\Buffs\FomoBuff.png" />
 	  <None Remove="description.txt" />
 	  <None Remove="Localization\en-US_Mods.GridBlock.Surprises.hjson" />
 	  <None Remove="Localization\ru-RU_Mods - Copy.GridBlock.hjson" />

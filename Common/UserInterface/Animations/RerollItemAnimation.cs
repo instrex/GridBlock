@@ -14,6 +14,7 @@ public class RerollItemAnimation : IAnimation {
     public Vector2 velocity;
     public float gravity;
     public float rotation;
+    public bool hidden;
 
     public void Draw() {
         var progress = Lifetime / duration;
@@ -25,7 +26,7 @@ public class RerollItemAnimation : IAnimation {
         Main.spriteBatch.Draw(tex,
             position - Main.screenPosition,
             frame,
-            Color.White * scale,
+            (hidden ? Color.Black : Color.White) * scale,
             rotation,
             frame.Size() * 0.5f,
             scale * 1.25f,

@@ -1,16 +1,18 @@
 ﻿using GridBlock.Common;
 using GridBlock.Common.Surprises;
+using GridBlock.Content.Buffs;
 using Terraria;
+using Terraria.ModLoader;
 
 namespace GridBlock.Content.Surprises;
 
-public class TimeChangeDaySurprise : GridBlockSurprise {
-    public override float GetWeight(Player player, GridBlockChunk chunk) => 0.1f;
+public class SaleSurprise : GridBlockSurprise {
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
-        return !Main.dayTime && !Main.fastForwardTimeToDawn && chunk.TileCoord.Y < Main.worldSurface;
+        return !player.HasBuff<CostIncreaseBuff>() && !player.HasBuff<SaleBuff>();
     }
 
     public override void Trigger(Player player, GridBlockChunk chunk) {
-        Main.fastForwardTimeToDawn = true;
+        player.AddBuff(ModContent.BuffType<SaleBuff>(), 60);
     }
 }
+

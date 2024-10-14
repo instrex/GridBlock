@@ -1,19 +1,84 @@
-TorchSurprise: Да будет свет
+TorchSurprise: {
+	$parentVal: Да будет свет
+	Message: Пускай факелы осветят твой путь...
+}
+
 SlimeSurprise: Липкая ситуация
 RewardSurprise: Награда за смелость
 HealingSurprise: Хилимся-живём
-GenderSwapSurprise: Ой! Смена пола
-UnlockNeighbourSurprise: Аттракцион невиданной щедрости
-PlayerBuffSpeedSurprise: Вперёёёёёд
-SkeletalSurprise: Мегалования
-ZombieSurprise: Ходячие мертвецы
+
+GenderSwapSurprise: {
+	$parentVal: Ой! Смена пола
+	Message: Возможно, стоит посмотреть чуть поближе...
+}
+
+UnlockNeighbourSurprise: {
+	$parentVal: Аттракцион невиданной щедрости
+	Message: Соседний чанк теперь тоже разблокирован!
+}
+
+PlayerBuffSpeedSurprise: {
+	$parentVal: Вперёёёёёд
+	Message: Временно увеличена скорость передвижения!
+}
+
 DungeonGuardianSurprise: Испугались? Обосрался
 StarFallSurprise: Астральная диарея
-TimeChangeDaySurprise: Проснись и пой
-TimeChangeNightSurprise: Заткнись и спи
-RandomChunkTripSurprise: 20-минутное приключение
+
+TimeChangeDaySurprise: {
+	$parentVal: Проснись и пой
+	Message: А вот и солнышко...
+}
+
+TimeChangeNightSurprise: {
+	$parentVal: Заткнись и спи
+	Message: Пора баиньки...
+}
+
+RandomChunkTripSurprise: {
+	$parentVal: 20-минутное приключение
+	Message: Рядом появляется интересный портал...
+}
+
+MysterySurprise: {
+	$parentVal: Что это за покемон?
+	Message: Придётся гадать...
+}
+
+CostIncreaseSurprise: {
+	$parentVal: Инфляция
+	Message: Всё такое дорогое...
+}
+
+SaleSurprise: {
+	$parentVal: Распродажа Steam
+	Message: Два по цене одного
+}
+
+FomoSurprise: {
+	// $parentVal: Limited Offer
+	// Message: 75% off on your favorite reward chunks! ONLY NOW!
+}
+
+AddRerollsSurprise: {
+	// $parentVal: Gambling Addiction
+	// Message: Two more rerolls!
+}
+
+CashbackSurprise: {
+	// $parentVal: Cashback
+	// Message: How convenient...
+}
+
+DoubleLockSurprise: {
+	$parentVal: Безграничная наглость
+	Message: Полный беспредел!
+}
+
 EyeSurprise: Они смотрят
 HellHordeSurprise: Восставшие из ада
 IceHordeSurprise: Холодное приветствие
 JungleSurprise: Зов джунглей
+SkeletalSurprise: Мегалования
+ZombieSurprise: Ходячие мертвецы
 HarpySurprise: Курицы

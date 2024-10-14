@@ -1,19 +1,84 @@
-TorchSurprise: Let there be light
+TorchSurprise: {
+	$parentVal: Let there be light
+	Message: Some torches fill the area with light...
+}
+
 SlimeSurprise: Sticky situation
 RewardSurprise: For the Worthy
 HealingSurprise: Heal up
-GenderSwapSurprise: Oops! Gender change
-UnlockNeighbourSurprise: It's free real estate
-PlayerBuffSpeedSurprise: Gotta go fast
-SkeletalSurprise: Megalovania
-ZombieSurprise: The Walking Dead
+
+GenderSwapSurprise: {
+	$parentVal: Oops! Gender change
+	Message: You might have to look closer...
+}
+
+UnlockNeighbourSurprise: {
+	$parentVal: It's free real estate
+	Message: A neighbouring chunk is now unlocked as well!
+}
+
+PlayerBuffSpeedSurprise: {
+	$parentVal: Gotta go fast
+	Message: Temporarily increased mobility.
+}
+
 DungeonGuardianSurprise: Wake up
 StarFallSurprise: Astral diarrhea
-TimeChangeDaySurprise: Good morning
-TimeChangeNightSurprise: Sweet dreams
-RandomChunkTripSurprise: A 20 minute adventure
+
+TimeChangeDaySurprise: {
+	$parentVal: Good morning
+	Message: It's almost daytime...
+}
+
+TimeChangeNightSurprise: {
+	$parentVal: Sweet dreams
+	Message: Time to sleep...
+}
+
+RandomChunkTripSurprise: {
+	$parentVal: A 20 minute adventure
+	Message: A portal leading somewhere has appeared...
+}
+
+MysterySurprise: {
+	$parentVal: Who's that Pokémon?
+	Message: It's time to guess!
+}
+
+CostIncreaseSurprise: {
+	$parentVal: Inflation
+	Message: Everything is more expensive...
+}
+
+SaleSurprise: {
+	$parentVal: Steam Sale
+	Message: Pick your favorite!
+}
+
+FomoSurprise: {
+	$parentVal: Limited Offer
+	Message: 75% off on your favorite reward chunks! ONLY NOW!
+}
+
+AddRerollsSurprise: {
+	$parentVal: Gambling Addiction
+	Message: Two more rerolls!
+}
+
+CashbackSurprise: {
+	$parentVal: Cashback
+	Message: How convenient...
+}
+
+DoubleLockSurprise: {
+	$parentVal: Double Dip
+	Message: Guess you'll have to try again...
+}
+
 EyeSurprise: They are watching
 HellHordeSurprise: They came from hell
 IceHordeSurprise: Cold welcome
 JungleSurprise: Jungle's call
+SkeletalSurprise: Megalovania
+ZombieSurprise: The Walking Dead
 HarpySurprise: Chicken

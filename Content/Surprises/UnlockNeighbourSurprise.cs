@@ -46,6 +46,6 @@ public class UnlockNeighbourSurprise : GridBlockSurprise {
         }
 
         var chosenOne = neighboursToConsider[Main.rand.Next(neighboursToConsider.Count)];
-        chosenOne.Unlock(player);
+        chosenOne.Unlock(player, false);
     }
 }

@@ -1,5 +1,8 @@
 ﻿using GridBlock.Common.Costs;
 using GridBlock.Common.Surprises;
+using GridBlock.Common.UserInterface;
+using GridBlock.Common.UserInterface.Animations;
+using GridBlock.Content.Buffs;
 using GridBlock.Content.Surprises;
 using Microsoft.Xna.Framework;
 using System;
@@ -129,6 +132,23 @@ public class GridBlockChunk(int Id) {
     }
 
     /// <summary>
+    /// Gets adjusted unlock cost.
+    /// </summary>
+    public float GetCostModifier(Player player) {
+        var mod = 1.0f;
+        if (player.HasBuff<CostIncreaseBuff>())
+            mod *= 2.0f;
+
+        if (player.HasBuff<SaleBuff>())
+            mod *= 0.5f;
+
+        if (player.HasBuff<FomoBuff>() && Group == CostGroup.PaidReward)
+            mod *= 0.25f;
+
+        return mod;
+    }
+
+    /// <summary>
     /// Called when any player is near the chunk.
     /// </summary>
     public void Update(Player player) {
@@ -178,39 +198,43 @@ public class GridBlockChunk(int Id) {
         if (UnlockCost is null)
             return false;
 
+        var mod = GetCostModifier(player);
+
         if (UnlockCost.IsACoin) {
             storageContext = 0;
-            return player.CanAfford(UnlockCost.value);
+            return player.CanAfford((int)(UnlockCost.value * mod));
         }
 
         var itemCount = 0;
 
+        var requiredStack = (int)Math.Max(1, Math.Floor(UnlockCost.stack * mod));
+
         // check inventory
-        if (TryCheckInventory(player.inventory, UnlockCost.stack, ref itemCount, true)) {
+        if (TryCheckInventory(player.inventory, requiredStack, ref itemCount, true)) {
             storageContext = 0;
             return true;
         }
 
         // check piggy bank
-        if (TryCheckInventory(player.bank.item, UnlockCost.stack, ref itemCount)) {
+        if (TryCheckInventory(player.bank.item, requiredStack, ref itemCount)) {
             storageContext = 1;
             return true;
         }
 
         // check safe
-        if (TryCheckInventory(player.bank2.item, UnlockCost.stack, ref itemCount)) {
+        if (TryCheckInventory(player.bank2.item, requiredStack, ref itemCount)) {
             storageContext = 2;
             return true;
         }
 
         // check defender's forge
-        if (TryCheckInventory(player.bank3.item, UnlockCost.stack, ref itemCount)) {
+        if (TryCheckInventory(player.bank3.item, requiredStack, ref itemCount)) {
             storageContext = 3;
             return true;
         }
 
         // check void vault
-        if (TryCheckInventory(player.bank4.item, UnlockCost.stack, ref itemCount)) {
+        if (TryCheckInventory(player.bank4.item, requiredStack, ref itemCount)) {
             storageContext = 4;
             return true;
         }
@@ -222,8 +246,10 @@ public class GridBlockChunk(int Id) {
         if (UnlockCost is null)
             return;
 
+        var mod = GetCostModifier(player);
+
         if (UnlockCost.IsACoin) {
-            player.PayCurrency(UnlockCost.value);
+            player.PayCurrency((int)(UnlockCost.value * mod));
             return;
         }
 
@@ -233,7 +259,8 @@ public class GridBlockChunk(int Id) {
             .Concat(player.bank4.item)
             .ToArray();
 
-        for (var i = 0; i < UnlockCost.stack; i++) {
+        var cost = Math.Max(1, Math.Floor(UnlockCost.stack * mod));
+        for (var i = 0; i < cost; i++) {
             var index = Array.FindIndex(banks, x => x.type == UnlockCost.type);
 
             if (index == -1) {
@@ -329,12 +356,31 @@ public class GridBlockChunk(int Id) {
             // save to history stack
             player.GetModPlayer<GridBlockPlayer>().PushSurpriseHistory(surprise.Id);
 
-            var text = string.Concat(Language.GetTextValue($"Mods.GridBlock.Surprises.{surprise.GetType().Name}"), surprise.IsNegative ? "..." : "!");
+            // hide other animations
+            foreach (var anim in GridBlockUi.Animations.Active.OfType<SurpriseTextAnimation>()) {
+                anim.Lifetime = MathF.Max(anim.Lifetime, 60 * 5);
+            }
+
+            var localizationKey = $"Mods.GridBlock.Surprises.{surprise.GetType().Name}";
+            var messageLocalizationKey = $"{localizationKey}.Message";
+            var text = Language.GetTextValue(localizationKey);
 
             // display funny text
             var origin = (WorldCoordTopLeft + new Vector2(GridBlockWorld.Instance.Chunks.CellSize * 16 * 0.5f)).ToPoint();
-            CombatText.NewText(new(origin.X - 16, origin.Y + 16, 32, 32), surprise.IsNegative ? Color.Red : Color.Gold, text, true);
-            Main.NewText(text, surprise.IsNegative ? Color.Red : Color.Gold);
+
+            var message = Language.GetTextValue(messageLocalizationKey);
+
+            var textColor = surprise.IsNegative ? Color.Red : Color.Gold;
+
+            GridBlockUi.Animations.Active.Add(new SurpriseTextAnimation {
+                Title = string.Concat(text, surprise.IsNegative ? "..." : "!"),
+                TitleColor = textColor,
+                Description = message == messageLocalizationKey ? null : message
+            });
+
+            var chatMessage = Language.GetTextValue("Mods.GridBlock.SurpriseTrigger", player.name, $"[c/{textColor.Hex3()}:{text}]");
+
+            Main.NewText(chatMessage, Color.White);
         }
     }
 }
