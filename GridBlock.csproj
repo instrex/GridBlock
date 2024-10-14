@@ -8,6 +8,7 @@
 		
 	</PropertyGroup>
 	<ItemGroup>
+	  <None Remove="description.txt" />
 	  <None Remove="Localization\en-US_Mods.GridBlock.Surprises.hjson" />
 	  <None Remove="Localization\ru-RU_Mods - Copy.GridBlock.hjson" />
 	  <None Remove="Localization\ru-RU_Mods - Copy.GridBlock.Surprises.hjson" />

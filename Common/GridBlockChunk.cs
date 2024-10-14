@@ -80,12 +80,12 @@ public class GridBlockChunk(int Id) {
     /// <summary>
     /// Collapse unlock cost for this chunk.
     /// </summary>
-    public void CollapseUnlockCost() {
+    public void CollapseUnlockCost(bool useSeededRandom = true) {
         if (IsUnlocked || IsUnlockCostCollapsed)
             return;
 
         var gridWorld = ModContent.GetInstance<GridBlockWorld>();
-        var pool = CostPoolGenerator.GetPool(Group, this, gridWorld.GridSeed + Id);
+        var pool = CostPoolGenerator.GetPool(Group, this, useSeededRandom ? gridWorld.GridSeed + Id : null);
 
         List<GridBlockChunk> neighbours = [];
         for (var i = -1; i < 2; i++) {
@@ -314,6 +314,24 @@ public class GridBlockChunk(int Id) {
         }
 
         return gridRng.NextFloat() < 0.03f ? CostGroup.Adventure : CostGroup.Advanced;
+    }
+
+    /// <summary>
+    /// Attempts to reroll this chunk's unlock requirement.
+    /// </summary>
+    public void Reroll() {
+        if (UnlockCost == null)
+            return;
+
+        var oldCostType = UnlockCost.type;
+        for (var i = 0; i < 10; i++) {
+            IsUnlockCostCollapsed = false;
+            CollapseUnlockCost(useSeededRandom: false);
+
+            // attempt to get a unique cost
+            if (UnlockCost.type != oldCostType)
+                break;
+        }
     }
 
     /// <summary>

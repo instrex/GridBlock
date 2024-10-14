@@ -2,7 +2,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,20 +21,10 @@ public class GridBlockUi {
     public static bool IsHoveringChunk { get; private set; }
 
     GridBlockChunk _lastHoveredChunk;
-    float _holdDuration;
+    float _holdDuration, _rerollShake;
     bool _waitForMouseDownBeforeUnlocking;
 
-    List<ItemFlowAnimation> _itemFlow = [];
-
-    class ItemFlowAnimation {
-        public Item item;
-        public float timer;
-
-        public float rotation, rotationSpeed;
-        public float arcAmount;
-
-        public Vector2 origin, target;
-    }
+    readonly GridBlockUiAnimations _animations = new();
 
     public void Draw() {
         var gridWorld = ModContent.GetInstance<GridBlockWorld>();
@@ -46,10 +35,6 @@ public class GridBlockUi {
 
         var currentChunkCoord = new Point((int)Main.LocalPlayer.Center.X / 16 / gridWorld.Chunks.CellSize,
             (int)Main.LocalPlayer.Center.Y / 16 / gridWorld.Chunks.CellSize);
-
-        var pixel = ModContent.Request<Texture2D>("GridBlock/Assets/Pixel").Value;
-
-        var lightTex = ModContent.Request<Texture2D>("GridBlock/Assets/Light").Value;
 
         var radiusX = Main.screenWidth / 16 / gridWorld.Chunks.CellSize;
         var radiusY = Main.screenHeight / 16 / gridWorld.Chunks.CellSize;
@@ -74,10 +59,8 @@ public class GridBlockUi {
 
                 var bgColor = (nearbyChunk.Group == CostGroup.Expensive ? Color.Gold * 0.5f : Color.DarkRed) 
                     * (0.25f + 0.05f * MathF.Sin(Main.GlobalTimeWrappedHourly * 2 + nearbyChunk.Id * 0.05f));
-                Main.spriteBatch.Draw(pixel, worldPos - Main.screenPosition,
+                Main.spriteBatch.Draw(ModAssets.PixelTex, worldPos - Main.screenPosition,
                     null, bgColor, 0, Vector2.Zero, gridWorld.Chunks.CellSize * 16 / 2, 0, 0);
-
-                var gradientTex = ModContent.Request<Texture2D>("GridBlock/Assets/BorderGradient").Value;
 
                 {
                     var size = gridWorld.Chunks.CellSize * 16f;
@@ -107,9 +90,9 @@ public class GridBlockUi {
                                 rotation = -MathHelper.PiOver2;
                             }
 
-                            Main.spriteBatch.Draw(gradientTex,
+                            Main.spriteBatch.Draw(ModAssets.BorderGradientTex,
                                 worldBounds.TopLeft() + new Vector2(i, k) + new Vector2(32) - Main.screenPosition,
-                                new Rectangle(2, isCorner ? 2 : 68, 64, 64),
+                                isCorner ? ModAssets.BorderGradient_Corner : ModAssets.BorderGradient_Side,
                                 Color.Red with { A = 0 } * (0.05f + 0.025f * MathF.Sin(Main.GlobalTimeWrappedHourly * 4 + i * 0.01f + k * 0.01f)),
                                 rotation,
                                 new Vector2(32),
@@ -128,11 +111,12 @@ public class GridBlockUi {
                     screenBounds.Inflate(-64, -72);
 
                     var itemIconPos = worldPos + new Vector2(gridWorld.Chunks.CellSize * 16 * 0.5f);
-                    //if (_lastHoveredChunk == nearbyChunk && _holdDuration > 0) {
-                    //    itemIconPos += MathF.Sin(Main.GlobalTimeWrappedHourly * 24).ToRotationVector2() * (_holdDuration / 10f);
-                    //}
-
                     var isHoveringChunk = worldBounds.Contains(Main.MouseWorld.ToPoint());
+
+                    if (_rerollShake > 0 && isHoveringChunk && _lastHoveredChunk == nearbyChunk) {
+                        itemIconPos.X += MathF.Sin(Main.GlobalTimeWrappedHourly * 36) * 12 * (_rerollShake / 60f);
+                        _rerollShake -= 2;
+                    }
 
                     if (isHoveringChunk) {
                         if (_lastHoveredChunk != nearbyChunk) {
@@ -146,7 +130,9 @@ public class GridBlockUi {
 
                     var item = nearbyChunk.UnlockCost;
                     var playerHasItem = nearbyChunk.CheckUnlockRequirementsForPlayer(Main.LocalPlayer, out var storageContext);
-                    var canUnlockChunk = playerHasItem && Main.LocalPlayer.Distance(worldBounds.Center()) < Main.screenHeight * 0.75f && !Main.LocalPlayer.dead;
+                    var playerInRangeOfUnlock = Main.LocalPlayer.Distance(worldBounds.Center()) < Main.screenHeight * 0.75f && !Main.LocalPlayer.dead;
+                    var canUnlockChunk = playerHasItem && playerInRangeOfUnlock;
+                    var canRerollChunk = gridWorld.RerollCount > 0;
                     var textColor = playerHasItem ? (canUnlockChunk && isHoveringChunk ? Color.Gold : ItemRarity.GetColor(item.rare)) : Color.Lerp(Color.Gray, Color.Red, 0.25f + MathF.Sin(Main.GlobalTimeWrappedHourly * 4) * 0.125f);
 
                     if (!screenBounds.Contains(itemIconPos.ToPoint())) {
@@ -230,16 +216,14 @@ public class GridBlockUi {
                             playerHasItem ? Color.White : Color.Gray, 24f);
                     }
 
-                    //ItemSlot.Draw(Main.spriteBatch, ref item, ItemSlot.Context.CreativeInfinite,
-                    //    itemIconPos + new Vector2(-16) - Main.screenPosition, playerHasItem ? Color.White : Color.Gray);
-
-                    var iconOffsetY = 0f;
+                    var iconOffsetY = (nearbyChunk.UnlockCost.stack > 1 ? -12f : -22f) + (isHoveringChunk ? 4f : 0);
 
                     if (canUnlockChunk) {
                         var scale = _lastHoveredChunk == nearbyChunk ? 1f + EaseHelper.ExpoOut(_holdDuration / UnlockHoldDuration) * 0.25f : 1f;
                         var text = Language.GetTextValue("Mods.GridBlock.HoldToUnlock");
                         var size = FontAssets.MouseText.Value.MeasureString(text);
-                        var pos = itemIconPos + new Vector2(size.X * -0.5f * scale, 76) - Main.screenPosition;
+                        var pos = itemIconPos + new Vector2((size.X * -0.5f) * scale, 76 + iconOffsetY) - Main.screenPosition;
+
                         Utils.DrawBorderString(Main.spriteBatch, text,
                             pos, Color.DarkGray * (isHoveringChunk ? 1.0f : 0.5f), scale, 0f);
 
@@ -258,7 +242,7 @@ public class GridBlockUi {
 
                             var unlockGlowOpacity = f < 0.2f ? f / 0.2f : 1f;
 
-                            Main.spriteBatch.Draw(lightTex,
+                            Main.spriteBatch.Draw(ModAssets.LightTex,
                                 pos + new Vector2(size.X * f * 1.25f, size.Y * 0.5f),
                                 null,
                                 Color.Gold with { A = 0 } * 0.25f * unlockGlowOpacity,
@@ -269,7 +253,7 @@ public class GridBlockUi {
                                 0
                             );
 
-                            Main.spriteBatch.Draw(lightTex,
+                            Main.spriteBatch.Draw(ModAssets.LightTex,
                                 pos + new Vector2(size.X * f * 0.5f, size.Y * 0.5f),
                                 null,
                                 Color.Gold with { A = 0 } * 0.25f * unlockGlowOpacity,
@@ -282,31 +266,64 @@ public class GridBlockUi {
                         }
 
                         iconOffsetY += size.Y * scale;
-                    }
+                    } 
 
+                    if (nearbyChunk.Group != CostGroup.Expensive && playerInRangeOfUnlock && isHoveringChunk && _holdDuration <= 0) {
+                        var text = Language.GetTextValue("Mods.GridBlock.Reroll", gridWorld.RerollCount);
+                        var size = FontAssets.MouseText.Value.MeasureString(text) * 0.9f;
+                        var pos = itemIconPos + new Vector2((size.X * -0.5f + 16 * 0.65f), 72 + iconOffsetY) - Main.screenPosition;
+
+                        Utils.DrawBorderString(Main.spriteBatch, text,
+                            pos, Color.DarkGray * (canRerollChunk && isHoveringChunk ? 1.0f : 0.5f), 0.9f, 0f);
+
+                        for (var i = 0; i < 4; i++) {
+                            Main.spriteBatch.Draw(
+                                ModAssets.MouseIconTex,
+                                pos + new Vector2(-12, size.Y * 0.5f) + (MathHelper.PiOver2 * i).ToRotationVector2() * new Vector2(2),
+                                ModAssets.MouseIconTex_Right,
+                                Color.Black * 0.35f,
+                                0,
+                                ModAssets.MouseIconTex_Left.Size() * 0.5f,
+                                0.65f,
+                                0,
+                                0
+                            );
+                        }
+
+                        Main.spriteBatch.Draw(
+                            ModAssets.MouseIconTex,
+                            pos + new Vector2(-12, size.Y * 0.5f),
+                            ModAssets.MouseIconTex_Right,
+                            canRerollChunk && isHoveringChunk ? Color.White : Color.DarkGray,
+                            0,
+                            ModAssets.MouseIconTex_Left.Size() * 0.5f,
+                            0.65f,
+                            0,
+                            0
+                        );
+
+                        iconOffsetY += size.Y;
+                    }
                     
-                    var specialIndicatorPos = itemIconPos + new Vector2(0, 86 + iconOffsetY) - Main.screenPosition;
+                    var specialIndicatorPos = itemIconPos + new Vector2(0, 92 + iconOffsetY) - Main.screenPosition;
 
                     // draw special reward indicators
                     if (nearbyChunk.Group == CostGroup.Expensive) {
-                        var rewardTex = ModContent.Request<Texture2D>("GridBlock/Assets/RewardIndicator");
-
                         for (var i = 0; i < 4; i++) {
-                            Main.spriteBatch.Draw(rewardTex.Value, specialIndicatorPos
+                            Main.spriteBatch.Draw(ModAssets.RewardIndicatorTex, specialIndicatorPos
                                 + (i * MathHelper.PiOver2 + Main.GlobalTimeWrappedHourly).ToRotationVector2()
                                 * (4 + 2 * MathF.Sin(Main.GlobalTimeWrappedHourly * 6)),
-                                null, Color.Gold with { A = 0 } * 0.25f, 0, rewardTex.Size() * 0.5f, 1f, 0, 0);
+                                null, Color.Gold with { A = 0 } * 0.25f, 0, ModAssets.RewardIndicatorTex.Size() * 0.5f, 1f, 0, 0);
                         }
 
-                        Main.spriteBatch.Draw(rewardTex.Value, specialIndicatorPos, null, Color.White, 0, rewardTex.Size() * 0.5f, 1f, 0, 0);
+                        Main.spriteBatch.Draw(ModAssets.RewardIndicatorTex, specialIndicatorPos, null, Color.White, 0, ModAssets.RewardIndicatorTex.Size() * 0.5f, 1f, 0, 0);
                     } else {
-                        var lockIconTex = ModContent.Request<Texture2D>("GridBlock/Assets/LockIcon").Value;
                         var color = (playerHasItem ? Color.Black : Color.Red * 0.5f) * 0.25f;
                         if (_holdDuration > 0 && _lastHoveredChunk == nearbyChunk) {
                             color = Color.Lerp(color, Color.Transparent, _holdDuration / UnlockHoldDuration);
                         }
 
-                        Main.spriteBatch.Draw(lockIconTex,
+                        Main.spriteBatch.Draw(ModAssets.LockIconTex,
                             specialIndicatorPos,
                             null,
                             color,
@@ -318,6 +335,29 @@ public class GridBlockUi {
                         );
                     }
 
+                    if (isHoveringChunk && canRerollChunk && playerInRangeOfUnlock) {
+                        if (Main.mouseRight && Main.mouseRightRelease) {
+                            nearbyChunk.Reroll();
+
+                            // TODO: sync
+                            gridWorld.RerollCount--;
+
+                            _rerollShake = 60f;
+
+                            for (var i = 0; i < 15; i++) {
+                                var dir = (MathHelper.TwoPi / 8 * i).ToRotationVector2().RotatedByRandom(0.5);
+                                _animations.Active.Add(new RerollItemAnimation {
+                                    duration = Main.rand.Next(45, 90),
+                                    velocity = dir * Main.rand.NextFloat(1, 12) * new Vector2(1f, 0.5f),
+                                    gravity = Main.rand.NextFloat(0.9f, 0.96f),
+                                    rotation = Main.rand.NextFloat(6.28f),
+                                    position = itemIconPos + dir * 32,
+                                    oldItemType = nearbyChunk.UnlockCost.type
+                                });
+                            }
+                        }
+                    }
+
                     if (canUnlockChunk && isHoveringChunk) {
                         if (_waitForMouseDownBeforeUnlocking && Main.mouseLeftRelease)
                             _waitForMouseDownBeforeUnlocking = false;
@@ -326,11 +366,10 @@ public class GridBlockUi {
                             _holdDuration += 1f;
                             if (_holdDuration < UnlockHoldDuration - 20 && (int)_holdDuration % 5 == 0) {
                                 SoundEngine.PlaySound(SoundID.Item1);
-                                _itemFlow.Add(new ItemFlowAnimation { 
+                                _animations.Active.Add(new UnlockItemFlowAnimation {
                                     item = nearbyChunk.UnlockCost,
                                     origin = Main.LocalPlayer.Center + Main.rand.NextVector2Unit() * Main.rand.NextFloat(1, 16),
                                     target = itemIconPos + Main.rand.NextVector2Unit() * Main.rand.NextFloat(1, 16),
-
                                     rotation = Main.rand.NextFloat(6.28f),
                                     rotationSpeed = Main.rand.NextFloat(-0.5f, 0.5f),
                                     arcAmount = Main.rand.NextFloat(-1f, 1f),
@@ -347,8 +386,8 @@ public class GridBlockUi {
 
                     if (nearbyChunk.UnlockCost.stack > 1) {
                         Utils.DrawBorderString(Main.spriteBatch, $"x{nearbyChunk.UnlockCost.stack}",
-                            itemIconPos + new Vector2(0, 42 * (isHoveringChunk ? 1f : 1)) - Main.screenPosition, textColor,
-                            canUnlockChunk && isHoveringChunk ? 0.85f : 0.75f, 0.5f);
+                            itemIconPos + new Vector2(0, 42 * (isHoveringChunk ? 1.05f : 1)) - Main.screenPosition, textColor,
+                            canUnlockChunk && isHoveringChunk ? 0.9f : 0.85f, 0.5f);
                     }
                 }
             }
@@ -359,51 +398,10 @@ public class GridBlockUi {
             _holdDuration = 0;
         }
 
-        foreach (var anim in _itemFlow) {
-            var progress = anim.timer / 30f;
-
-            Main.GetItemDrawFrame(anim.item.type, out var tex, out var frame);
-
-            var pos = EaseHelper.SampleCubicBezier(anim.origin,
-                Vector2.Lerp(anim.origin, anim.target, 0.5f) + anim.origin.DirectionTo(anim.target).RotatedBy(MathHelper.PiOver2) * anim.arcAmount * 260f,
-                anim.target, EaseHelper.SineInOut(progress));
-
-            var scale = (1f - MathF.Abs(progress - 0.5f) / 0.5f);
-
-            Main.spriteBatch.Draw(lightTex,
-                pos - Main.screenPosition,
-                null,
-                ItemRarity.GetColor(anim.item.rare) with { A = 0 } * scale * 0.2f,
-                anim.rotation,
-                new Vector2(45),
-                scale,
-                0,
-                0
-            );
-
-            Main.spriteBatch.Draw(tex,
-                pos - Main.screenPosition,
-                frame,
-                Color.White * scale,
-                anim.rotation,
-                frame.Size() * 0.5f,
-                /*progress < 0.2f ? progress / 0.2f : (progress >= 0.8f ? 1f - (progress - 0.8f) / 0.2f : 1f)*/
-                scale * 1.25f,
-                0,
-                0
-            );
-        }
+        _animations.Draw();
     }
 
-    public void Update(float deltaTime) {
-        var shouldClearAnimBuffer = false;
-        foreach (var anim in _itemFlow) {
-            anim.timer += deltaTime / (1.0f / 60);
-            if (anim.timer >= 60f) shouldClearAnimBuffer = true;
-            anim.rotation += anim.rotationSpeed;
-        }
-
-        if (shouldClearAnimBuffer)
-            _itemFlow.RemoveAll(i => i.timer >= 60);
+    public void Update() {
+        _animations.Update();
     }
 }

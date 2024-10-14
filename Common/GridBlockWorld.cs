@@ -21,7 +21,7 @@ using Terraria.WorldBuilding;
 namespace GridBlock.Common;
 
 public class GridBlockWorld : ModSystem {
-    public const string SAVE_VERSION = "test-1";
+    public const string SAVE_VERSION = "test-2";
 
     /// <summary>
     /// Tiles that contribute to "no surprise" status of the chunk.
@@ -36,6 +36,11 @@ public class GridBlockWorld : ModSystem {
 
     public static GridBlockWorld Instance => ModContent.GetInstance<GridBlockWorld>();
 
+    /// <summary>
+    /// Amount of rerolls remaining.
+    /// </summary>
+    public int RerollCount { get; set; }
+
     // world-specific variables
     public GridMap2D<GridBlockChunk> Chunks { get; private set; }
     public string WorldVersion { get; private set; }
@@ -46,6 +51,7 @@ public class GridBlockWorld : ModSystem {
     public override void PostWorldGen() {
         GridSeed = WorldGen.genRand.Next();
         WorldVersion = SAVE_VERSION;
+        RerollCount = 2;
         ResetChunks();
     }
 
@@ -85,8 +91,6 @@ public class GridBlockWorld : ModSystem {
             Main.LocalPlayer.mouseInterface = true;
             Main.blockMouse = true;
         }
-
-        
     }
 
     public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers) {
@@ -99,12 +103,13 @@ public class GridBlockWorld : ModSystem {
     }
 
     public override void UpdateUI(GameTime gameTime) {
-        _uiHelper.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
+        _uiHelper.Update();
     }
 
     public override void SaveWorldData(TagCompound tag) {
         tag["GridVersion"] = WorldVersion;
         tag["GridSeed"] = GridSeed;
+        tag[nameof(RerollCount)] = RerollCount;
 
         if (Chunks is null) {
             Mod.Logger.Warn("GridBlock Chunk data was null!");
@@ -150,6 +155,8 @@ public class GridBlockWorld : ModSystem {
 
         if (tag.TryGet<int>("GridSeed", out var seed))
             GridSeed = seed;
+
+        RerollCount = tag.TryGet<int>(nameof(RerollCount), out var rerollCount) ? rerollCount : 2;
 
         // create determenistic chunks
         ResetChunks();
