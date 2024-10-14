@@ -1,4 +1,4 @@
-﻿namespace GridBlock.Common;
+﻿namespace GridBlock.Common.UserInterface;
 
 public interface IAnimation {
     /// <summary>

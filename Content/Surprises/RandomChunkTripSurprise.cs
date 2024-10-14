@@ -10,7 +10,7 @@ namespace GridBlock.Content.Surprises;
 public class RandomChunkTripSurprise : GridBlockSurprise {
     static bool ValidChunkCheck(GridBlockChunk chunk) {
         var chunks = GridBlockWorld.Instance.Chunks;
-        return !chunk.IsUnlocked && chunk.Group != Common.Costs.CostGroup.Expensive &&
+        return !chunk.IsUnlocked && chunk.Group != Common.Costs.CostGroup.PaidReward &&
             chunk.ChunkCoord.X != 0 && chunk.ChunkCoord.X != chunks.Bounds.X - 1 &&
             chunk.ChunkCoord.Y != 0 && chunk.ChunkCoord.Y != chunks.Bounds.Y - 1;
     }

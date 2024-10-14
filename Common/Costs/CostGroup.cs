@@ -24,5 +24,5 @@ public enum CostGroup {
     /// <summary>
     /// Special cost for chunks with reward event.
     /// </summary>
-    Expensive,
+    PaidReward,
 }

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace GridBlock.Common;
+namespace GridBlock.Common.UserInterface;
 
 public class GridBlockUiAnimations {
     public readonly List<IAnimation> Active = [];

@@ -35,7 +35,7 @@ public class GridBlockMapLayer : ModMapLayer {
                 continue;
 
             var color = chunk.Group switch {
-                CostGroup.Expensive => Color.Magenta,
+                CostGroup.PaidReward => Color.Magenta,
                 _ => Color.Red * 0.5f
             };
 
@@ -57,7 +57,7 @@ public class GridBlockMapLayer : ModMapLayer {
 
             if (chunk.UnlockCost != null) {
                 var anim = Main.itemAnimations[chunk.UnlockCost.type];
-                var tex = chunk.Group == CostGroup.Expensive ? 
+                var tex = chunk.Group == CostGroup.PaidReward ? 
                     ModContent.Request<Texture2D>("GridBlock/Assets/RewardIndicator")
                     : TextureAssets.Item[chunk.UnlockCost.type];
 

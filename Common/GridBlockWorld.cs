@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GridBlock.Common.Costs;
+using GridBlock.Common.UserInterface;
 using GridBlock.Content.Surprises;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -22,17 +23,6 @@ namespace GridBlock.Common;
 
 public class GridBlockWorld : ModSystem {
     public const string SAVE_VERSION = "test-2";
-
-    /// <summary>
-    /// Tiles that contribute to "no surprise" status of the chunk.
-    /// </summary>
-    public static readonly HashSet<int> SafetyTileExclusionSet = [
-        TileID.BlueDungeonBrick,
-        TileID.GreenDungeonBrick,
-        TileID.PinkDungeonBrick,
-        TileID.LihzahrdBrick,
-        TileID.LihzahrdAltar
-    ];
 
     public static GridBlockWorld Instance => ModContent.GetInstance<GridBlockWorld>();
 
@@ -69,7 +59,7 @@ public class GridBlockWorld : ModSystem {
         Chunks = new GridMap2D<GridBlockChunk>(40, Main.maxTilesX, Main.maxTilesY);
         Chunks.Fill((map, id) => {
             var chunk = new GridBlockChunk(id);
-            var group = GridBlockChunk.CalculateGroup(map, chunkRng, chunk, id, out var unlocked);
+            var group = ChunkGroupGenerator.CalculateGroup(map, chunkRng, chunk, id, out var unlocked);
             chunk.IsUnlocked  = unlocked;
             chunk.Group = group;
 
@@ -77,7 +67,7 @@ public class GridBlockWorld : ModSystem {
             if (unlocked) chunksToCollapseNeighboursFor.Add(chunk);
 
             // collapse cost immediately
-            if (chunk.Group == CostGroup.Expensive) 
+            if (chunk.Group == CostGroup.PaidReward) 
                 chunk.CollapseUnlockCost();
 
             return chunk;
@@ -132,7 +122,7 @@ public class GridBlockWorld : ModSystem {
                     continue;
                 }
 
-                if (chunk.IsUnlockCostCollapsed && chunk.Group != CostGroup.Expensive) {
+                if (chunk.IsUnlockCostCollapsed && chunk.Group != CostGroup.PaidReward) {
                     if (chunk.UnlockCost is null) {
                         ModContent.GetInstance<GridBlock>().Logger.Warn("Attempted to save a chunk with collapsed unlock cost but no item instance? Weird...");
                     }

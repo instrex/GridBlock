@@ -11,7 +11,7 @@ namespace GridBlock.Content.Surprises;
 public class UnlockNeighbourSurprise : GridBlockSurprise {
     static bool CheckChunk(Point chunkCoord, out GridBlockChunk chunk) {
         chunk = GridBlockWorld.Instance.Chunks.GetByChunkCoord(chunkCoord);
-        return chunk != null && !chunk.IsUnlocked && chunk.Group != Common.Costs.CostGroup.Expensive;
+        return chunk != null && !chunk.IsUnlocked && chunk.Group != Common.Costs.CostGroup.PaidReward;
     }
 
     public override float GetWeight(Player player, GridBlockChunk chunk) {
