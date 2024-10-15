@@ -25,6 +25,8 @@ public abstract class AmbushSurpriseProjectile : SurpriseProjectile {
 
     public virtual void OnNpcSpawned(NPC npc) { }
 
+    protected int CurrentNpcIndex;
+
     public override void AI() {
         if (Projectile.ai[1]++ > 5) {
             Projectile.ai[1] = 0;
@@ -36,6 +38,7 @@ public abstract class AmbushSurpriseProjectile : SurpriseProjectile {
                     var npc = NPC.NewNPCDirect(Projectile.GetSource_FromThis(), tileCoord.ToWorldCoordinates(), npcType);
                     npc.netUpdate = true;
                     OnNpcSpawned(npc);
+                    CurrentNpcIndex++;
 
                     break;
                 }

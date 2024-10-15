@@ -11,7 +11,7 @@ public abstract class ItemShowerSurpriseProjectile : SurpriseProjectile {
 
     public virtual (int, int) GetItemTypeAndStack() => (ItemType, 1);
 
-    public virtual bool CanSpawnItemAtLocation(Vector2 worldPos, Point tileCoord) => !Main.tile[tileCoord].HasTile;
+    public virtual bool CanSpawnItemAtLocation(Vector2 worldPos, Point tileCoord) => !Main.tile[tileCoord].HasTile && Main.tile[tileCoord].LiquidType == 0;
 
     public virtual void OnItemSpawned(Item item) { }
 

@@ -13,30 +13,51 @@ Projectiles: {
 	// HarpySurpriseProjectile.DisplayName: Harpy Surprise Projectile
 	// IceHordeSurpriseProjectile.DisplayName: Ice Horde Surprise Projectile
 	// JungleSurpriseProjectile.DisplayName: Jungle Surprise Projectile
+	// FoodSurpriseProjectile.DisplayName: Food Surprise Projectile
+	// GoldAnimalsSurpriseProjectile.DisplayName: Gold Animals Surprise Projectile
+	// GemSurpriseProjectile.DisplayName: Gem Surprise Projectile
+	// BigDesertHordeSurpriseProjectile.DisplayName: Big Desert Horde Surprise Projectile
+	// BigIceHordeSurpriseProjectile.DisplayName: Big Ice Horde Surprise Projectile
+	// DesertHordeSurpriseProjectile.DisplayName: Desert Horde Surprise Projectile
+	// EvilHordeSurpriseProjectile.DisplayName: Evil Horde Surprise Projectile
+	// HallowHordeSurpriseProjectile.DisplayName: Hallow Horde Surprise Projectile
 }
 
 HoldToUnlock: Удерживайте для открытия!
 Reroll: Замена ({0})
+RerollObtained: Получен шанс замены ({0})
 SurpriseTrigger: "{0} вызвал [{1}]!"
+
+HardmodeMessage: {
+	Title: Начинается хардмод!
+	Description: Мир претерпел значительные изменения...
+}
 
 Buffs: {
 	MysteryBuff: {
-		// DisplayName: It's a Mystery
-		// Description: You cannot see chunk unlock requirements!
+		DisplayName: Это большой секрет...
+		Description: Стоимости чанков скрыты
 	}
 
 	CostIncreaseBuff: {
-		// DisplayName: Inflation
-		// Description: Everything is expensive!
+		DisplayName: Инфляция
+		Description: Всё слишком дорого!
 	}
 
 	SaleBuff: {
-		// DisplayName: Steam Sale
-		// Description: Time to clear your wishlist!
+		DisplayName: Распродажа Steam
+		Description: Пора почистить вишлист!
 	}
 
 	FomoBuff: {
-		// DisplayName: Fomo Buff
-		// Description: Mods.GridBlock.Buffs.FomoBuff.Description
+		DisplayName: Время ограничено!
+		Description: Открывай наградный чанк на 75% дешевле!
+	}
+}
+
+Items: {
+	ChunkDice: {
+		DisplayName: Чанковая Кость
+		Tooltip: Дает шанс замены стоимости чанка
 	}
 }

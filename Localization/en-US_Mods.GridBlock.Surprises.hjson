@@ -22,7 +22,6 @@ PlayerBuffSpeedSurprise: {
 	Message: Temporarily increased mobility.
 }
 
-DungeonGuardianSurprise: Wake up
 StarFallSurprise: Astral diarrhea
 
 TimeChangeDaySurprise: {
@@ -75,6 +74,81 @@ DoubleLockSurprise: {
 	Message: Guess you'll have to try again...
 }
 
+BuffUpSurprise: {
+	$parentVal: Buff Up
+	Message: Newfound strength!
+}
+
+FoodSurprise: {
+	$parentVal: Mukbang
+	Message: I'm always two steps ahead...
+}
+
+GemSurprise: {
+	$parentVal: Gemspark Splash
+	Message: We're rich!
+}
+
+GoldAnimalsSurprise: {
+	$parentVal: VIP ZOO
+	Message: Catch them if you can...
+}
+
+PetSurprise: {
+	$parentVal: Lil' Buddy
+	Message: You're not alone <3
+}
+
+ItemDropSurprise: {
+	$parentVal: Whoops
+	Message: Did you drop anything? Hope it wasn't near lav-
+}
+
+BrownDyeSurprise: {
+	$parentVal: Brown Situation
+	Message: Happens to everybody...
+}
+
+RainbowDyeSurprise: {
+	$parentVal: Skittles
+	Message: Taste the rainbow!
+}
+
+EchoDyeSurprise: {
+	$parentVal: Huh?
+	Message: Nothing there...
+}
+
+GlowDyeSurprise: {
+	$parentVal: Light Mode
+	Message: I can see everything...
+}
+
+HallowConversionSurprise: {
+	$parentVal: Blessing of Light
+	Message: You feel hallow
+}
+
+EvilConversionSurprise: {
+	$parentVal: Curse of the Night
+	Message: You feel evil
+}
+
+TravellingMerchantSurprise: {
+	$parentVal: New stuff
+	Message: ... at the cost of life.
+}
+
+SomeoneDiesSurprise: {
+	$parentVal: They are dead
+	Message: It is your fault.
+}
+
+ReforgeSurprise: {
+	$parentVal: Goblin's Prank
+	Message: ... was it good or nah?
+}
+
 EyeSurprise: They are watching
 HellHordeSurprise: They came from hell
 IceHordeSurprise: Cold welcome
@@ -82,3 +156,8 @@ JungleSurprise: Jungle's call
 SkeletalSurprise: Megalovania
 ZombieSurprise: The Walking Dead
 HarpySurprise: Chicken
+HallowHordeSurprise: Prismatic Party
+EvilHordeSurprise: No rest for the wicked
+BigIceHordeSurprise: Snow Halation
+DesertHordeSurprise: Sandy Bastards
+BigDesertHordeSurprise: Pharaoh's Curse

@@ -22,7 +22,6 @@ PlayerBuffSpeedSurprise: {
 	Message: Временно увеличена скорость передвижения!
 }
 
-DungeonGuardianSurprise: Испугались? Обосрался
 StarFallSurprise: Астральная диарея
 
 TimeChangeDaySurprise: {
@@ -56,23 +55,98 @@ SaleSurprise: {
 }
 
 FomoSurprise: {
-	// $parentVal: Limited Offer
-	// Message: 75% off on your favorite reward chunks! ONLY NOW!
+	$parentVal: Акция
+	Message: 75% скидка за наградные чанки! ВРЕМЯ ОГРАНИЧЕНО!
 }
 
 AddRerollsSurprise: {
-	// $parentVal: Gambling Addiction
-	// Message: Two more rerolls!
+	$parentVal: Казино
+	Message: Еще два раза?
 }
 
 CashbackSurprise: {
-	// $parentVal: Cashback
-	// Message: How convenient...
+	$parentVal: Неожиданный кэшбек
+	Message: А приятно-то как!
 }
 
 DoubleLockSurprise: {
 	$parentVal: Безграничная наглость
 	Message: Полный беспредел!
+}
+
+BuffUpSurprise: {
+	$parentVal: Богатырская сила
+	Message: Здоров как пельмень!
+}
+
+FoodSurprise: {
+	$parentVal: Привет от Бабушки
+	Message: Кушай, внучок!
+}
+
+GemSurprise: {
+	$parentVal: Сияние камней
+	Message: Мы богаты!
+}
+
+GoldAnimalsSurprise: {
+	$parentVal: ВИП Зоопарк
+	Message: Элитная тусовка
+}
+
+PetSurprise: {
+	$parentVal: Милый дружок
+	Message: Ты не один <3
+}
+
+ItemDropSurprise: {
+	$parentVal: Упс
+	Message: Надеюсь, ничего не упало в лаву...
+}
+
+BrownDyeSurprise: {
+	$parentVal: Внештатная ситуация
+	Message: Ну с кем не бывает?
+}
+
+RainbowDyeSurprise: {
+	$parentVal: Скитлз
+	Message: Попробуй радугу!
+}
+
+EchoDyeSurprise: {
+	$parentVal: Ну хоть сундуки остались
+	Message: Да ты че-
+}
+
+GlowDyeSurprise: {
+	$parentVal: Flashbang
+	Message: Light mode enabled!
+}
+
+HallowConversionSurprise: {
+	$parentVal: Чудеса на виражах
+	Message: Благословение света
+}
+
+EvilConversionSurprise: {
+	$parentVal: Будь ты проклят!
+	Message: Проклятье ночи
+}
+
+TravellingMerchantSurprise: {
+	$parentVal: Новый ассортимент
+	Message: ... ценой жизни.
+}
+
+SomeoneDiesSurprise: {
+	$parentVal: Сейчас наш клиент умрёт
+	Message: Это всё твоя вина.
+}
+
+ReforgeSurprise: {
+	$parentVal: Пранк Гоблина
+	Message: ... так что, круто вышло?
 }
 
 EyeSurprise: Они смотрят
@@ -82,3 +156,8 @@ JungleSurprise: Зов джунглей
 SkeletalSurprise: Мегалования
 ZombieSurprise: Ходячие мертвецы
 HarpySurprise: Курицы
+HallowHordeSurprise: Призматическая вечеринка
+EvilHordeSurprise: Зло не дремлет
+BigIceHordeSurprise: Ой, мороз-мороз
+DesertHordeSurprise: Пустынные твари
+BigDesertHordeSurprise: Проклятье Фараона

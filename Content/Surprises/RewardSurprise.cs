@@ -35,10 +35,38 @@ public class RewardSurpriseProjectile : ItemShowerSurpriseProjectile {
         ItemID.AnkletoftheWind
     ];
 
+    public static readonly HashSet<int> AnkhRewards = [
+        ItemID.Blindfold,
+        ItemID.PocketMirror,
+        ItemID.Vitamins,
+        ItemID.AdhesiveBandage,
+        ItemID.Nazar,
+        ItemID.TrifoldMap,
+        ItemID.Bezoar,
+        ItemID.ArmorPolish,
+        ItemID.Megaphone,
+        ItemID.FastClock,
+    ];
+
+
+    public static readonly HashSet<int> PhoneRewards = [
+        ItemID.DepthMeter,
+        ItemID.Compass,
+        ItemID.Radar,
+        ItemID.TallyCounter,
+        ItemID.LifeformAnalyzer,
+        ItemID.DPSMeter,
+        ItemID.Stopwatch,
+        ItemID.MetalDetector,
+        ItemID.FishermansGuide,
+        ItemID.WeatherRadio,
+        ItemID.Sextant,
+    ];
+
     public override void SetDefaults() {
         base.SetDefaults();
 
-        Projectile.timeLeft = (Main.hardMode ? 3 : 5) * SpawnInterval;
+        Projectile.timeLeft = (Main.hardMode ? 8 : 5) * SpawnInterval;
     }
 
     public override (int, int) GetItemTypeAndStack() {
@@ -53,7 +81,7 @@ public class RewardSurpriseProjectile : ItemShowerSurpriseProjectile {
 
         // add life crystals often
         if (player.statLifeMax < 400) rng.Add((ItemID.LifeCrystal, 1), 4.5);
-        else if (NPC.downedMechBossAny) rng.Add((ItemID.LifeFruit, 1), 0.5);
+        else if (NPC.downedMechBossAny) rng.Add((ItemID.LifeFruit, 1), 1.5);
 
         // add mana crystals sometimes
         if (player.statManaMax < 200) rng.Add((ItemID.ManaCrystal, 1), 0.025);
@@ -63,19 +91,29 @@ public class RewardSurpriseProjectile : ItemShowerSurpriseProjectile {
             AddOneTimeLoot(reward, 0.25f);
         }
 
-        // TODO: add hardmode rewards
+        if (Main.hardMode) {
+            // add onee-tiem rewards ankh
+            foreach (var reward in AnkhRewards) {
+                AddOneTimeLoot(reward, 0.15f);
+            }
+        }
+
+        // add cell phone ingredients
+        foreach (var reward in PhoneRewards) {
+            AddOneTimeLoot(reward, 0.05f);
+        }
 
         if (Main.hardMode) {
-            rng.Add((WorldGen.SavedOreTiers.Cobalt == TileID.Cobalt ? ItemID.CobaltBar : ItemID.PalladiumBar, Main.rand.Next(1, 5) * 5));
-            rng.Add((WorldGen.SavedOreTiers.Mythril == TileID.Mythril ? ItemID.MythrilBar : ItemID.OrichalcumBar, Main.rand.Next(1, 5) * 4), 0.5);
-            rng.Add((WorldGen.SavedOreTiers.Adamantite == TileID.Adamantite ? ItemID.AdamantiteBar : ItemID.TitaniumBar, Main.rand.Next(1, 5) * 3), 0.25);
+            rng.Add((WorldGen.SavedOreTiers.Cobalt == TileID.Cobalt ? ItemID.CobaltBar : ItemID.PalladiumBar, Main.rand.Next(1, 5) * 3));
+            rng.Add((WorldGen.SavedOreTiers.Mythril == TileID.Mythril ? ItemID.MythrilBar : ItemID.OrichalcumBar, Main.rand.Next(1, 5) * 2), 0.5);
+            rng.Add((WorldGen.SavedOreTiers.Adamantite == TileID.Adamantite ? ItemID.AdamantiteBar : ItemID.TitaniumBar, Main.rand.Next(1, 5) * 1), 0.25);
 
-            rng.Add((ItemID.WoodenCrateHard, 1));
-            rng.Add((ItemID.IronCrateHard, 1));
-            rng.Add((ItemID.GoldenCrateHard, 1), 0.25);
+            rng.Add((ItemID.WoodenCrateHard, 1), 0.25);
+            rng.Add((ItemID.IronCrateHard, 1), 0.25);
+            rng.Add((ItemID.GoldenCrateHard, 1), 0.1);
 
             if (NPC.downedMechBoss1 && NPC.downedMechBoss2 && NPC.downedMechBoss3) {
-                rng.Add((ItemID.ChlorophyteBar, Main.rand.Next(1, 5) * 4), 0.5);
+                rng.Add((ItemID.ChlorophyteBar, Main.rand.Next(1, 5) * 2), 0.5);
             }
         } else {
             rng.Add((ItemID.WoodenCrate, 1));
@@ -83,8 +121,13 @@ public class RewardSurpriseProjectile : ItemShowerSurpriseProjectile {
             rng.Add((ItemID.GoldenCrate, 1), 0.25);
         }
 
+        // add healies
+        if (Main.hardMode) rng.Add((NPC.downedPlantBoss ? ItemID.SuperHealingPotion : ItemID.GreaterHealingPotion, Main.rand.Next(1, 5)), 0.5);
+        else rng.Add((NPC.downedBoss2 ? ItemID.HealingPotion : ItemID.LesserHealingPotion, Main.rand.Next(1, 5)), 0.5);
+
         // common rewards
         rng.Add((ItemID.HerbBag, Main.rand.Next(1, 5)), 0.05);
+        rng.Add((ItemID.Geode, Main.rand.Next(1, 2)), 0.05);
         rng.Add((ItemID.IronskinPotion, Main.rand.Next(2, 5) * 3), 0.25);
         rng.Add((ItemID.ArcheryPotion, Main.rand.Next(2, 5) * 3), 0.25);
         rng.Add((ItemID.InfernoPotion, Main.rand.Next(2, 5) * 3), 0.25);
@@ -99,7 +142,7 @@ public class RewardSurpriseProjectile : ItemShowerSurpriseProjectile {
     }
 
     public override void OnItemSpawned(Item item) {
-        if (OneTimeRewards.Contains(item.type)) {
+        if (OneTimeRewards.Concat(AnkhRewards).Concat(PhoneRewards).Contains(item.type)) {
             Main.player[Projectile.owner].GetModPlayer<GridBlockPlayer>().RichChunkRewards.Add(item.Clone());
         }
 

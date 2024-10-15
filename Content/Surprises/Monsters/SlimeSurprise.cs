@@ -10,7 +10,7 @@ namespace GridBlock.Content.Surprises;
 public class SlimeSurprise : GridBlockSurprise.ProjectileSpawner<SlimeSurpriseProjectile> {
     public override bool IsNegative => true;
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
-        return chunk.EmptyTileAmount > 100 && !player.ZoneSkyHeight && chunk.TileCoord.Y < Main.worldSurface;
+        return chunk.ContentAnalysis.SuitableForHordeEvents && !player.ZoneSkyHeight && chunk.TileCoord.Y < Main.worldSurface;
     }
 }
 

@@ -13,11 +13,25 @@ Projectiles: {
 	HarpySurpriseProjectile.DisplayName: Harpy Surprise Projectile
 	IceHordeSurpriseProjectile.DisplayName: Ice Horde Surprise Projectile
 	JungleSurpriseProjectile.DisplayName: Jungle Surprise Projectile
+	FoodSurpriseProjectile.DisplayName: Food Surprise Projectile
+	GoldAnimalsSurpriseProjectile.DisplayName: Gold Animals Surprise Projectile
+	GemSurpriseProjectile.DisplayName: Gem Surprise Projectile
+	BigDesertHordeSurpriseProjectile.DisplayName: Big Desert Horde Surprise Projectile
+	BigIceHordeSurpriseProjectile.DisplayName: Big Ice Horde Surprise Projectile
+	DesertHordeSurpriseProjectile.DisplayName: Desert Horde Surprise Projectile
+	EvilHordeSurpriseProjectile.DisplayName: Evil Horde Surprise Projectile
+	HallowHordeSurpriseProjectile.DisplayName: Hallow Horde Surprise Projectile
 }
 
 HoldToUnlock: Hold to unlock!
 Reroll: Reroll ({0})
+RerollObtained: Chunk Reroll obtained ({0})
 SurpriseTrigger: "{0} has triggered [{1}]!"
+
+HardmodeMessage: {
+	Title: Hardmode Begins!
+	Description: The world has gone through quite a change...
+}
 
 Buffs: {
 	MysteryBuff: {
@@ -36,7 +50,14 @@ Buffs: {
 	}
 
 	FomoBuff: {
-		DisplayName: Fomo Buff
-		Description: Mods.GridBlock.Buffs.FomoBuff.Description
+		DisplayName: LIMITED OFFER!
+		Description: Unlock reward chunk now for 75% less!
+	}
+}
+
+Items: {
+	ChunkDice: {
+		DisplayName: Chunk Die
+		Tooltip: Grants reroll chance
 	}
 }

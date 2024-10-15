@@ -7,19 +7,19 @@ using Terraria.Utilities;
 
 namespace GridBlock.Content.Surprises;
 
-public class IceHordeSurprise : GridBlockSurprise.ProjectileSpawner<IceHordeSurpriseProjectile> {
+public class JungleSurprise : GridBlockSurprise.ProjectileSpawner<JungleSurpriseProjectile> {
     public override bool IsNegative => true;
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
-        return chunk.EmptyTileAmount > 100 && player.ZoneSnow;
+        return chunk.ContentAnalysis.SuitableForHordeEvents && player.ZoneJungle;
     }
 }
 
-public class IceHordeSurpriseProjectile : AmbushSurpriseProjectile {
+public class JungleSurpriseProjectile : AmbushSurpriseProjectile {
     public override void SetDefaults() {
         base.SetDefaults();
 
         Projectile.timeLeft = (Main.rand.Next(2, 4) * (Main.rand.NextFloat() < 0.1f ? 3 : 1)) * SpawnInterval;
-        NpcType = NPCID.IceSlime;
+        NpcType = NPCID.JungleSlime;
     }
 
     public override void OnNpcSpawned(NPC npc) {
@@ -35,25 +35,19 @@ public class IceHordeSurpriseProjectile : AmbushSurpriseProjectile {
     public override int GetNpcType() {
         var rng = new WeightedRandom<int>();
 
-        rng.Add(NPCID.IceSlime);
-        if (!Main.dayTime) rng.Add(NPCID.ZombieEskimo);
-
-        if (Projectile.position.Y > Main.rockLayer) {
-            rng.Add(NPCID.SpikedIceSlime);
-            rng.Add(NPCID.SnowFlinx, 0.25);
-            rng.Add(NPCID.UndeadViking);
-            rng.Add(NPCID.UndeadMiner);
-        }
-
-        if (Main.hardMode) {
-            if (Projectile.position.Y > Main.rockLayer) rng.Add(NPCID.ArmoredViking);
-            rng.Add(NPCID.IceTortoise);
-            rng.Add(NPCID.IceElemental);
-            rng.Add(NPCID.Wolf);
-            rng.Add(NPCID.IcyMerman);
-            rng.Add(NPCID.IceMimic, 0.25);
-            rng.Add(NPCID.IceGolem, 0.1);
-        }
+        rng.Add(NPCID.JungleSlime);
+        rng.Add(NPCID.SpikedJungleSlime);
+        rng.Add(NPCID.Hornet);
+        rng.Add(NPCID.HornetFatty);
+        rng.Add(NPCID.HornetLeafy);
+        rng.Add(NPCID.HornetHoney);
+        rng.Add(NPCID.HornetSpikey);
+        rng.Add(NPCID.HornetStingy);
+        rng.Add(NPCID.BigHornetFatty);
+        rng.Add(NPCID.BigHornetLeafy);
+        rng.Add(NPCID.BigHornetHoney);
+        rng.Add(NPCID.BigHornetSpikey);
+        rng.Add(NPCID.BigHornetStingy);
 
         return rng.Get();
     }

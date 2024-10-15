@@ -10,7 +10,7 @@ namespace GridBlock.Content.Surprises;
 public class SkeletalSurprise : GridBlockSurprise.ProjectileSpawner<SkeletalSurpriseProjectile> {
     public override bool IsNegative => true;
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
-        return chunk.EmptyTileAmount > 100 && chunk.TileCoord.Y > Main.worldSurface;
+        return chunk.ContentAnalysis.SuitableForHordeEvents && chunk.TileCoord.Y > Main.worldSurface && chunk.TileCoord.Y < Main.UnderworldLayer;
     }
 }
 

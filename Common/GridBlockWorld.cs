@@ -5,14 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 using GridBlock.Common.Costs;
 using GridBlock.Common.UserInterface;
+using GridBlock.Common.UserInterface.Animations;
 using GridBlock.Content.Surprises;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using Terraria.Audio;
+using Terraria.Chat;
 using Terraria.GameContent;
 using Terraria.GameInput;
 using Terraria.ID;
+using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 using Terraria.UI;
@@ -31,6 +34,21 @@ public class GridBlockWorld : ModSystem {
     /// </summary>
     public int RerollCount { get; set; }
 
+    /// <summary>
+    /// Flags for each downed boss, signaling if rerolls from them have been obtained.
+    /// </summary>
+    public HashSet<string> BossRerollsObtained { get; set; }
+
+    /// <summary>
+    /// Flag signalizing one-time hardmode changes.
+    /// </summary>
+    public bool AppliedHardmodeChanges { get; set; }
+
+    /// <summary>
+    /// Flag signalizing one-time post-plantera changes.
+    /// </summary>
+    public bool AppliedPlantmodeChanges { get; set; }
+
     // world-specific variables
     public GridMap2D<GridBlockChunk> Chunks { get; private set; }
     public string WorldVersion { get; private set; }
@@ -41,11 +59,13 @@ public class GridBlockWorld : ModSystem {
     public override void PostWorldGen() {
         GridSeed = WorldGen.genRand.Next();
         WorldVersion = SAVE_VERSION;
+        BossRerollsObtained = [];
         RerollCount = 2;
         ResetChunks();
     }
 
     public override void OnWorldUnload() {
+        BossRerollsObtained = null;
         WorldVersion = "";
         GridSeed = 0;
         Chunks = null;
@@ -76,10 +96,73 @@ public class GridBlockWorld : ModSystem {
         chunksToCollapseNeighboursFor.ForEach(c => c.CollapseNeighboursUnlockCost());
     }
 
+    void ApplyHardMode() {
+        var chunkRng = new UnifiedRandom(GridSeed);
+
+        // reassign groups
+        Chunks.Fill((map, id) => {
+            var chunk = map.GetById(id);
+            chunk.Group = ChunkGroupGenerator.CalculateGroup(map, chunkRng, chunk, id, out _);
+
+            return chunk;
+        });
+
+        // do quickie reroll
+        foreach (var chunk in Chunks.GetAll(c => c.IsUnlockCostCollapsed))
+            chunk.Reroll();
+
+        var playerChunks = Main.player.Where(p => p.active)
+            .Select(p => Chunks.GetByWorldPos(p.Center));
+
+        var closeCandidates = Chunks.GetAll(c => c.IsUnlocked && c.Group != CostGroup.Spawn && !c.ContentAnalysis.HasPylons)
+            .Except(playerChunks)
+            .ToList();
+
+        var chunksToClose = closeCandidates.Count / 2;
+
+        // now close 50% of the chunks and do a reroll on them
+        for (var i = 0; i < chunksToClose; i++) {
+            var victim = closeCandidates[Main.rand.Next(closeCandidates.Count)];
+            closeCandidates.Remove(victim);
+
+            // do a reroll
+            victim.IsUnlocked = false;
+            victim.Reroll();
+        }
+
+        // done
+        AppliedHardmodeChanges = true;
+    }
+
+    void ApplyPlantMode() {
+        // close all dungeon chunks
+        foreach (var chunk in Chunks.GetAll(c => (c.IsUnlocked || c.IsUnlockCostCollapsed) && c.ContentAnalysis.IsDungeon)) {
+            chunk.IsUnlocked = false;
+            chunk.Reroll();
+        }
+
+        // done
+        AppliedPlantmodeChanges = true;
+    }
+
     public override void PreUpdateDusts() {
         if (GridBlockUi.IsHoveringChunk) {
             Main.LocalPlayer.mouseInterface = true;
             Main.blockMouse = true;
+        }
+
+        if (Main.hardMode && !AppliedHardmodeChanges) {
+            GridBlockUi.Animations.Active.Add(new SurpriseTextAnimation {
+                Title = Language.GetTextValue("Mods.GridBlock.HardmodeMessage.Title"),
+                Description = Language.GetTextValue("Mods.GridBlock.HardmodeMessage.Description"),
+                TitleColor = Color.Magenta
+            });
+
+            ApplyHardMode();
+        }
+
+        if (NPC.downedPlantBoss && !AppliedPlantmodeChanges) {
+            ApplyPlantMode();
         }
     }
 
@@ -100,6 +183,9 @@ public class GridBlockWorld : ModSystem {
         tag["GridVersion"] = WorldVersion;
         tag["GridSeed"] = GridSeed;
         tag[nameof(RerollCount)] = RerollCount;
+        tag[nameof(BossRerollsObtained)] = BossRerollsObtained.ToArray();
+        tag[nameof(AppliedHardmodeChanges)] = AppliedHardmodeChanges;
+        tag[nameof(AppliedPlantmodeChanges)] = AppliedPlantmodeChanges;
 
         if (Chunks is null) {
             Mod.Logger.Warn("GridBlock Chunk data was null!");
@@ -120,6 +206,10 @@ public class GridBlockWorld : ModSystem {
                     // if it's unlocked, no other information is required
                     chunkTag[nameof(GridBlockChunk.IsUnlocked)] = true;
                     continue;
+                }
+
+                if (chunk.Modifier != ChunkModifier.None) {
+                    chunkTag[nameof(GridBlockChunk.Modifier)] = (int)chunk.Modifier;
                 }
 
                 if (chunk.IsUnlockCostCollapsed && chunk.Group != CostGroup.PaidReward) {
@@ -147,6 +237,9 @@ public class GridBlockWorld : ModSystem {
             GridSeed = seed;
 
         RerollCount = tag.TryGet<int>(nameof(RerollCount), out var rerollCount) ? rerollCount : 2;
+        BossRerollsObtained = tag.TryGet<string[]>(nameof(BossRerollsObtained), out var bossRerollsObtained) ? new(bossRerollsObtained) : [];
+        AppliedHardmodeChanges = tag.TryGet<bool>(nameof(AppliedHardmodeChanges), out var appliedHardmodeChanges) && appliedHardmodeChanges;
+        AppliedPlantmodeChanges = tag.TryGet<bool>(nameof(AppliedPlantmodeChanges), out var appliedPlantmodeChanges) && appliedPlantmodeChanges;
 
         // create determenistic chunks
         ResetChunks();
@@ -159,6 +252,10 @@ public class GridBlockWorld : ModSystem {
                         Mod.Logger.Warn($"Attempted to set non-existent chunk during loading. (Id: {id})");
                         continue;
                     }
+
+                    // assign modifiers
+                    if (chunkTag.TryGet<int>(nameof(GridBlockChunk.Modifier), out var modifierMask))
+                        chunk.Modifier = (ChunkModifier)modifierMask;
 
                     // unlock the chunk if its set as unlocked
                     if (chunkTag.ContainsKey(nameof(GridBlockChunk.IsUnlocked))) {

@@ -8,11 +8,14 @@ namespace GridBlock.Common.Surprises;
 
 public abstract class TilePlaceSurpriseProjectile : SurpriseProjectile {
     public int TileType { get; set; }
+    public int TileStyle { get; set; }
 
     public virtual bool CanPlaceTile(Point tileCoord, bool checkForBottomTileOrWall = true) =>
         (!Main.tile[tileCoord].HasTile || TileID.Sets.BreakableWhenPlacing[Main.tile[tileCoord].TileType])
         && (!checkForBottomTileOrWall || WorldGen.SolidTile(tileCoord.X, tileCoord.Y + 1) || Main.tile[tileCoord].WallType != 0)
         && !Main.chest.Any(c => c != null && new Rectangle(tileCoord.X, tileCoord.Y, 2, 2).Contains(c.x, c.y));
+
+    public virtual (int, int) GetTileTypeAndStyle() => (TileType, TileStyle);
 
     public virtual void OnTilePlaced(Point tileCoord) { }
 
@@ -23,7 +26,8 @@ public abstract class TilePlaceSurpriseProjectile : SurpriseProjectile {
             for (var i = 0; i < 1000; i++) {
                 var tileCoord = Chunk.TileCoord + new Point(Main.rand.Next(GridBlockWorld.Instance.Chunks.CellSize), Main.rand.Next(GridBlockWorld.Instance.Chunks.CellSize));
                 if (CanPlaceTile(tileCoord)) {
-                    if (WorldGen.PlaceTile(tileCoord.X, tileCoord.Y, TileType)) {
+                    var (type, style) = GetTileTypeAndStyle();
+                    if (WorldGen.PlaceTile(tileCoord.X, tileCoord.Y, type, style: style)) {
                         OnTilePlaced(tileCoord);
                         break;
                     }

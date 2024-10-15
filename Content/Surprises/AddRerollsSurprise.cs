@@ -1,11 +1,13 @@
 ﻿using GridBlock.Common;
 using GridBlock.Common.Surprises;
+using GridBlock.Content.Items;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Terraria;
+using Terraria.ModLoader;
 
 namespace GridBlock.Content.Surprises;
 
@@ -15,6 +17,6 @@ internal class AddRerollsSurprise : GridBlockSurprise {
     }
 
     public override void Trigger(Player player, GridBlockChunk chunk) {
-        GridBlockWorld.Instance.RerollCount += 2;
+        player.QuickSpawnItem(player.GetSource_FromThis(), ModContent.ItemType<ChunkDice>(), 2);
     }
 }

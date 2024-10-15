@@ -14,7 +14,7 @@ public record struct CostPoolItem(int Type, int Stack = 1, double Weight = 1.0, 
 
 public static class CostPoolGenerator {
     public const int RewardChunkBasePrice = 5;
-    public const int RewardChunkBasePriceHardmode = 15;
+    public const int RewardChunkBasePriceHardmode = 8;
 
     /// <summary>
     /// Reward chunk price will increase based on this value for each unique item obtained.
@@ -67,7 +67,9 @@ public static class CostPoolGenerator {
             new(ItemID.RichMahogany, 15, 0.5),
             new(ItemID.PalmWood, 15, 0.5),
             new(ItemID.AntlionMandible, 3),
-            new(ItemID.Stinger, 10, 0.15),
+            new(ItemID.Stinger, 3, 0.15),
+            new(ItemID.LesserHealingPotion, 3, 0.25),
+            new(ItemID.LesserManaPotion, 3, 0.25),
             new(ItemID.Amethyst, 3),
             new(ItemID.Sapphire, 3),
             new(ItemID.Emerald, 3),
@@ -85,6 +87,8 @@ public static class CostPoolGenerator {
             new(ItemID.FossilOre, 3),
             new(ItemID.FlinxFur, 3, 0.2),
             new(ItemID.SpikyBall, 15),
+            new(ItemID.Spike, 10),
+            new(ItemID.GoldenKey, 1, 0.25),
             new(ItemID.GlowingMushroom, 15),
             new(ItemID.Granite, 25),
             new(ItemID.Marble, 25),
@@ -120,11 +124,24 @@ public static class CostPoolGenerator {
                 new(ItemID.TurtleShell, 1, 0.25),
             ]);
 
-            if (NPC.downedMechBoss1) advancedGroup.Add(new(ItemID.SoulofMight, 4));
-            if (NPC.downedMechBoss2) advancedGroup.Add(new(ItemID.SoulofSight, 4));
-            if (NPC.downedMechBoss3) advancedGroup.Add(new(ItemID.SoulofFright, 4));
-            if (NPC.downedGolemBoss) advancedGroup.Add(new(ItemID.BeetleHusk, 4));
-            if (NPC.downedPlantBoss) advancedGroup.Add(new(ItemID.ShroomiteBar, 3));
+            if (NPC.downedMechBoss1) advancedGroup.Add(new(ItemID.SoulofMight, 4, 0.25));
+            if (NPC.downedMechBoss2) advancedGroup.Add(new(ItemID.SoulofSight, 4, 0.25));
+            if (NPC.downedMechBoss3) advancedGroup.Add(new(ItemID.SoulofFright, 4, 0.25));
+            if (NPC.downedMechBossAny) {
+                advancedGroup.Add(new(ItemID.HallowedBar, 3, 0.25));
+                advancedGroup.Add(new(ItemID.ChlorophyteBar, 3, 0.5));
+            }
+
+            if (NPC.downedGolemBoss) {
+                advancedGroup.Add(new(ItemID.BeetleHusk, 4));
+                advancedGroup.Add(new(ItemID.LihzahrdBrick, 10));
+            }
+
+            if (NPC.downedPlantBoss) {
+                advancedGroup.Add(new(ItemID.ShroomiteBar, 3, 0.5));
+                advancedGroup.Add(new(ItemID.LifeFruit, 2, 0.25));
+                advancedGroup.Add(new(ItemID.LifeFruit, 4, 0.05));
+            }
         }
 
         List<CostPoolItem> adventureGroup = [
@@ -176,6 +193,10 @@ public static class CostPoolGenerator {
 
             case CostGroup.Advanced:
                 candidates.AddRange(advancedGroup);
+                if (Main.hardMode) {
+                    candidates.AddRange(commonGroup.Select(g => g with { Weight = g.Weight * 0.1f }));
+                }
+
                 break;
 
             case CostGroup.Adventure:
@@ -184,15 +205,29 @@ public static class CostPoolGenerator {
                 break;
         }
 
+        // hellish
         if (chunk.TileCoord.Y > Main.UnderworldLayer) {
             candidates.AddRange([
                 new(ItemID.AshBlock, 50, 2),
                 new(ItemID.AshBlock, 10),
-                new(ItemID.Hellstone, 10),
+                new(ItemID.Hellstone, 5, 2),
                 new(ItemID.MeteoriteBar, 5),
                 new(ItemID.DemonTorch, 5),
                 new(ItemID.ObsidianBrick, 10, 2),
             ]);
+        }
+
+        // dungeon fun
+        if (chunk.ContentAnalysis.IsDungeon) {
+            candidates.AddRange([
+                new(ItemID.Bone, 20, 2),
+                new(ItemID.Book, 3, 2),
+                new(ItemID.GoldenKey, 1, 2),
+            ]);
+
+            if (NPC.downedPlantBoss) {
+                candidates.Add(new(ItemID.Ectoplasm, 2, 3));
+            }
         }
 
         var rng = new WeightedRandom<CostPoolItem>(seed is int newSeed ? newSeed : Main.rand.Next());

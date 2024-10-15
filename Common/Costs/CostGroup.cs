@@ -1,6 +1,8 @@
 ﻿namespace GridBlock.Common.Costs;
 
 public enum CostGroup {
+    Spawn,
+
     /// <summary>
     /// Cost of chunks around the spawn area. Items should be accessible right from the start.
     /// </summary>

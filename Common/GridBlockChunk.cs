@@ -3,6 +3,7 @@ using GridBlock.Common.Surprises;
 using GridBlock.Common.UserInterface;
 using GridBlock.Common.UserInterface.Animations;
 using GridBlock.Content.Buffs;
+using GridBlock.Content.Items;
 using GridBlock.Content.Surprises;
 using Microsoft.Xna.Framework;
 using System;
@@ -19,6 +20,17 @@ namespace GridBlock.Common;
 
 // chunk data
 public class GridBlockChunk(int Id) {
+
+    // struct used for storing content data about this chunk
+    public record struct ChunkTileData(int EmptyTilesCount, int Placeable1x1SpotsCount, int WallSpotsCount, int LiquidCount, bool IsDungeon, bool IsGolemDungeon, bool HasPylons,
+        float FullnessFactor) {
+
+        /// <summary>
+        /// Checks if horde events could be spawned in this chunk.
+        /// </summary>
+        public readonly bool SuitableForHordeEvents => EmptyTilesCount > 200 && LiquidCount < 100;
+    }
+
     public int Id { get; init; } = Id;
 
     // state variables (should be saved)
@@ -38,31 +50,12 @@ public class GridBlockChunk(int Id) {
     /// </summary>
     public Item UnlockCost { get; set; }
 
+    /// <summary>
+    /// Special modifier applied to a chunk.
+    /// </summary>
+    public ChunkModifier Modifier { get; set; }
+
     // determenistic variables
-
-    int? _emptyTileAmount;
-
-    public int EmptyTileAmount {
-        get {
-            if (_emptyTileAmount is not int emptyTileAmount) {
-                emptyTileAmount = 0;
-
-                // check all nearby tiles
-                for (var x = TileCoord.X; x <= TileCoord.X + GridBlockWorld.Instance.Chunks.CellSize; x++) {
-                    for (var y = TileCoord.Y; y <= TileCoord.Y + GridBlockWorld.Instance.Chunks.CellSize; y++) {
-                        var tile = Framing.GetTileSafely(x, y);
-                        if (!tile.HasTile && tile.LiquidType == 0)
-                            emptyTileAmount++;
-                    }
-                }
-
-                // cache the result
-                _emptyTileAmount = emptyTileAmount;
-            }
-
-            return emptyTileAmount;
-        }
-    }
 
     /// <summary>
     /// Cost group this chunk is assigned to.
@@ -78,7 +71,76 @@ public class GridBlockChunk(int Id) {
     /// <item> Surprise flags or other ratios are adjusted, as this process is done only during worldgen. </item>
     /// </list>
     /// </summary>
-    public bool ShouldBeSaved => IsUnlocked || IsUnlockCostCollapsed;
+    public bool ShouldBeSaved => IsUnlocked || IsUnlockCostCollapsed || Modifier != ChunkModifier.None;
+
+    #region Content Analysis 
+
+    ChunkTileData? _analysisData;
+
+    ChunkTileData RunTileAnalysis() {
+        var data = new ChunkTileData();
+
+        var tileNum = 0;
+
+        // check all nearby tiles
+        for (var x = TileCoord.X; x <= TileCoord.X + GridBlockWorld.Instance.Chunks.CellSize; x++) {
+            for (var y = TileCoord.Y; y <= TileCoord.Y + GridBlockWorld.Instance.Chunks.CellSize; y++) {
+                var tile = Framing.GetTileSafely(x, y);
+                if (tile.HasTile)
+                    tileNum++;
+
+                // counts empty spots
+                if (!tile.HasTile && tile.LiquidType == 0)
+                    data.EmptyTilesCount++;
+
+                // counts liquid tiles
+                if (tile.LiquidType != 0 && tile.LiquidAmount > 50)
+                    data.LiquidCount++;
+
+                // count spots with walls
+                if (tile.WallType != 0)
+                    data.WallSpotsCount++;
+
+                // count spots for placeable torches/1x1 tiles
+                if (Framing.GetTileSafely(x, y + 1).HasTile)
+                    data.Placeable1x1SpotsCount++;
+
+                if (tile.HasTile) {
+                    // check if chunk contains dungeon bricks
+                    if (tile.TileType is TileID.BlueDungeonBrick or TileID.GreenDungeonBrick or TileID.PinkDungeonBrick)
+                        data.IsDungeon = true;
+
+                    // check if golem bricks are there
+                    if (tile.TileType == TileID.LihzahrdBrick)
+                        data.IsGolemDungeon = true;
+
+                    // check for pylons
+                    if (tile.TileType == TileID.TeleportationPylon)
+                        data.HasPylons = true;
+                }
+            }
+        }
+
+        // calculate fullness factor
+        data.FullnessFactor = tileNum / (float)(GridBlockWorld.Instance.Chunks.CellSize * GridBlockWorld.Instance.Chunks.CellSize);
+
+        // cache the results
+        return data;
+    }
+
+    public ChunkTileData ContentAnalysis {
+        get {
+            if (_analysisData is not ChunkTileData data) {
+                _analysisData = data = RunTileAnalysis();
+            }
+
+            return data;
+        }
+    }
+
+    public int EmptyTileAmount => ContentAnalysis.EmptyTilesCount;
+
+    #endregion
 
     /// <summary>
     /// Collapse unlock cost for this chunk.
@@ -109,6 +171,30 @@ public class GridBlockChunk(int Id) {
             pool.elements.RemoveAll(p => p.Item1.Type == neighbour.UnlockCost.type);
         }
 
+        var modifierRng = useSeededRandom ? new UnifiedRandom(gridWorld.GridSeed + Id * 3) : Main.rand;
+
+        // decide on modifiers
+        Modifier = ChunkModifier.None;
+        if (Group != CostGroup.PaidReward) {
+            // 5% to make chunk mysterious
+            if (modifierRng.NextFloat() <= 0.05f) {
+                Modifier |= ChunkModifier.Mystery;
+            }
+
+            // 7.5% to gain a dice
+            if (modifierRng.NextFloat() <= 0.075f) {
+                Modifier |= ChunkModifier.FreeDice;
+            }
+
+            // 10% chance to get a discount, or price hike
+            if (modifierRng.NextFloat() <= 0.1f) {
+                var epic = Main.rand.NextFloat() < 0.5f;
+                Modifier |= Main.rand.NextBool() ?
+                    (epic ? ChunkModifier.Discount50 : ChunkModifier.Discount25) :
+                    (epic ? ChunkModifier.PriceIncrease50 : ChunkModifier.PriceIncrease25);
+            }
+        }
+
         // decide the item
         IsUnlockCostCollapsed = true;
         UnlockCost = pool.Get()
@@ -136,16 +222,29 @@ public class GridBlockChunk(int Id) {
     /// </summary>
     public float GetCostModifier(Player player) {
         var mod = 1.0f;
+
         if (player.HasBuff<CostIncreaseBuff>())
-            mod *= 2.0f;
+            mod += 1.0f;
 
         if (player.HasBuff<SaleBuff>())
-            mod *= 0.5f;
+            mod -= 0.5f;
 
         if (player.HasBuff<FomoBuff>() && Group == CostGroup.PaidReward)
-            mod *= 0.25f;
+            mod -= 0.75f;
 
-        return mod;
+        if (Modifier.HasFlag(ChunkModifier.Discount50))
+            mod -= 0.5f;
+
+        if (Modifier.HasFlag(ChunkModifier.Discount25))
+            mod -= 0.25f;
+
+        if (Modifier.HasFlag(ChunkModifier.PriceIncrease25))
+            mod += 0.25f;
+
+        if (Modifier.HasFlag(ChunkModifier.PriceIncrease50))
+            mod += 0.5f;
+
+        return Math.Clamp(mod, 0, 5);
     }
 
     /// <summary>
@@ -295,10 +394,7 @@ public class GridBlockChunk(int Id) {
     /// Attempts to reroll this chunk's unlock requirement.
     /// </summary>
     public void Reroll() {
-        if (UnlockCost == null)
-            return;
-
-        var oldCostType = UnlockCost.type;
+        var oldCostType = UnlockCost?.type ?? -1;
         for (var i = 0; i < 10; i++) {
             IsUnlockCostCollapsed = false;
             CollapseUnlockCost(useSeededRandom: false);
@@ -327,6 +423,10 @@ public class GridBlockChunk(int Id) {
             // trigger reward surprise
             ModContent.GetInstance<RewardSurprise>().Trigger(player, this);
             return;
+        }
+
+        if (Modifier.HasFlag(ChunkModifier.FreeDice)) {
+            player.QuickSpawnItem(player.GetSource_FromThis(), ModContent.ItemType<ChunkDice>());
         }
 
         if (!triggerSurprises || Main.rand.NextFloat() > 0.5f)

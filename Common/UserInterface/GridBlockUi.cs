@@ -131,7 +131,7 @@ public class GridBlockUi {
                         _lastHoveredChunk = nearbyChunk;
                     }
 
-                    var eventHideItem = Main.LocalPlayer.HasBuff<MysteryBuff>();
+                    var eventHideItem = Main.LocalPlayer.HasBuff<MysteryBuff>() || nearbyChunk.Modifier.HasFlag(ChunkModifier.Mystery);
 
                     var item = nearbyChunk.UnlockCost;
                     var costModifier = nearbyChunk.GetCostModifier(Main.LocalPlayer);
@@ -338,16 +338,43 @@ public class GridBlockUi {
                             color = Color.Lerp(color, Color.Transparent, _holdDuration / UnlockHoldDuration);
                         }
 
-                        Main.spriteBatch.Draw(ModAssets.LockIconTex,
-                            specialIndicatorPos,
-                            null,
-                            color,
-                            0,
-                            new Vector2(16),
-                            1,
-                            0,
-                            0
-                        );
+                        var hasDiscountTag = nearbyChunk.Modifier.HasFlag(ChunkModifier.Discount25)
+                            || nearbyChunk.Modifier.HasFlag(ChunkModifier.Discount50)
+                            || nearbyChunk.Modifier.HasFlag(ChunkModifier.PriceIncrease25)
+                            || nearbyChunk.Modifier.HasFlag(ChunkModifier.PriceIncrease50);
+
+                        var iconCount = (nearbyChunk.Modifier.HasFlag(ChunkModifier.FreeDice) ? 1 : 0)
+                            + (hasDiscountTag ? 1 : 0)
+                            + (nearbyChunk.Modifier.HasFlag(ChunkModifier.Mystery) ? 1 : 0)
+                            + 1;
+
+                        var iconX = (iconCount * 32) * -0.5f + 16;
+
+                        // lock icon
+                        Main.spriteBatch.Draw(ModAssets.StatusIconTex, specialIndicatorPos + new Vector2(iconX, 0), ModAssets.StatusIconTex_Locked,
+                            color, 0, new Vector2(16), 1, 0, 0 );
+                        iconX += 32;
+
+                        if (hasDiscountTag) {
+                            // discount icon
+                            Main.spriteBatch.Draw(ModAssets.StatusIconTex, specialIndicatorPos + new Vector2(iconX, 0), ModAssets.StatusIconTex_Discounted,
+                                color, 0, new Vector2(16), 1, 0, 0);
+                            iconX += 32;
+                        }
+                        
+                        if (nearbyChunk.Modifier.HasFlag(ChunkModifier.FreeDice)) {
+                            // dice icon
+                            Main.spriteBatch.Draw(ModAssets.StatusIconTex, specialIndicatorPos + new Vector2(iconX, 0), ModAssets.StatusIconTex_Dicey,
+                                color, 0, new Vector2(16), 1, 0, 0);
+                            iconX += 32;
+                        }
+
+                        if (nearbyChunk.Modifier.HasFlag(ChunkModifier.Mystery)) {
+                            // mystery icon
+                            Main.spriteBatch.Draw(ModAssets.StatusIconTex, specialIndicatorPos + new Vector2(iconX, 0), ModAssets.StatusIconTex_Mystery,
+                                color, 0, new Vector2(16), 1, 0, 0);
+                            iconX += 32;
+                        }
                     }
 
                     if (isHoveringChunk && canRerollChunk && playerInRangeOfUnlock) {
@@ -358,6 +385,8 @@ public class GridBlockUi {
                             gridWorld.RerollCount--;
 
                             _rerollShake = 60f;
+
+                            SoundEngine.PlaySound(SoundID.Item101);
 
                             for (var i = 0; i < 15; i++) {
                                 var dir = (MathHelper.TwoPi / 8 * i).ToRotationVector2().RotatedByRandom(0.5);
