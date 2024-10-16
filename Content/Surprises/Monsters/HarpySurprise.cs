@@ -10,7 +10,7 @@ namespace GridBlock.Content.Surprises;
 public class HarpySurprise : GridBlockSurprise.ProjectileSpawner<HarpySurpriseProjectile> {
     public override bool IsNegative => true;
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
-        return chunk.ContentAnalysis.SuitableForHordeEvents && player.ZoneSkyHeight;
+        return !Main.hardMode && chunk.ContentAnalysis.SuitableForHordeEvents && player.ZoneSkyHeight;
     }
 }
 

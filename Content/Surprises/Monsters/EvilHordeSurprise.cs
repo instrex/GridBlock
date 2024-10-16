@@ -9,6 +9,10 @@ namespace GridBlock.Content.Surprises;
 
 public class EvilHordeSurprise : GridBlockSurprise.ProjectileSpawner<EvilHordeSurpriseProjectile> {
     public override bool IsNegative => true;
+    public override float GetWeight(Player player, GridBlockChunk chunk) {
+        return 8f;
+    }
+
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
         return Main.hardMode && (player.ZoneCorrupt || player.ZoneCrimson) && chunk.ContentAnalysis.SuitableForHordeEvents;
     }
@@ -36,28 +40,36 @@ public class EvilHordeSurpriseProjectile : AmbushSurpriseProjectile {
         var rng = new WeightedRandom<int>();
 
         if (WorldGen.crimson) {
-            rng.Add(NPCID.BloodCrawler);
-            rng.Add(NPCID.CrimsonGoldfish);
-            rng.Add(NPCID.FaceMonster);
-            rng.Add(NPCID.Crimera);
-
             if (Main.hardMode) {
                 rng.Add(NPCID.Herpling);
                 rng.Add(NPCID.Crimslime);
                 rng.Add(NPCID.BloodJelly);
                 rng.Add(NPCID.BloodFeeder);
+                rng.Add(NPCID.CrimsonAxe);
+                rng.Add(NPCID.IchorSticker);
+                rng.Add(NPCID.PigronCrimson);
+                rng.Add(NPCID.FloatyGross);
                 rng.Add(NPCID.BloodMummy, 0.25);
+            } else {
+                rng.Add(NPCID.BloodCrawler);
+                rng.Add(NPCID.CrimsonGoldfish);
+                rng.Add(NPCID.FaceMonster);
+                rng.Add(NPCID.Crimera);
             }
-        } else {
-            rng.Add(NPCID.EaterofSouls);
-            rng.Add(NPCID.CorruptGoldfish);
-            rng.Add(NPCID.DevourerHead);
 
+        } else {
             if (Main.hardMode) {
                 rng.Add(NPCID.Corruptor);
+                rng.Add(NPCID.CursedHammer);
+                rng.Add(NPCID.Clinger);
+                rng.Add(NPCID.PigronCorruption);
                 rng.Add(NPCID.CorruptSlime);
                 rng.Add(NPCID.Slimer);
                 rng.Add(NPCID.DarkMummy, 0.25);
+            } else {
+                rng.Add(NPCID.EaterofSouls);
+                rng.Add(NPCID.CorruptGoldfish);
+                rng.Add(NPCID.DevourerHead);
             }
         }
 

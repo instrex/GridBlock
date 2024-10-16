@@ -9,7 +9,7 @@ using Terraria;
 
 namespace GridBlock.Content.Surprises;
 
-internal class DoubleLockSurprise : GridBlockSurprise {
+public class DoubleLockSurprise : GridBlockSurprise {
     public override bool IsNegative => true;
     public override void Trigger(Player player, GridBlockChunk chunk) {
         chunk.IsUnlocked = false;

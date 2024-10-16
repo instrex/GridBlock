@@ -48,7 +48,6 @@ public class RewardSurpriseProjectile : ItemShowerSurpriseProjectile {
         ItemID.FastClock,
     ];
 
-
     public static readonly HashSet<int> PhoneRewards = [
         ItemID.DepthMeter,
         ItemID.Compass,
@@ -66,7 +65,7 @@ public class RewardSurpriseProjectile : ItemShowerSurpriseProjectile {
     public override void SetDefaults() {
         base.SetDefaults();
 
-        Projectile.timeLeft = (Main.hardMode ? 8 : 5) * SpawnInterval;
+        Projectile.timeLeft = (Main.hardMode ? 6 : 5) * SpawnInterval;
     }
 
     public override (int, int) GetItemTypeAndStack() {
@@ -80,8 +79,8 @@ public class RewardSurpriseProjectile : ItemShowerSurpriseProjectile {
         }
 
         // add life crystals often
-        if (player.statLifeMax < 400) rng.Add((ItemID.LifeCrystal, 1), 4.5);
-        else if (NPC.downedMechBossAny) rng.Add((ItemID.LifeFruit, 1), 1.5);
+        rng.Add((ItemID.LifeCrystal, 1), player.statLifeMax < 400 ? 4.5 : 0.0125);
+        if (NPC.downedMechBossAny) rng.Add((ItemID.LifeFruit, 1), player.statLifeMax < 500 ? 1 : 0.0125);
 
         // add mana crystals sometimes
         if (player.statManaMax < 200) rng.Add((ItemID.ManaCrystal, 1), 0.025);
@@ -94,31 +93,31 @@ public class RewardSurpriseProjectile : ItemShowerSurpriseProjectile {
         if (Main.hardMode) {
             // add onee-tiem rewards ankh
             foreach (var reward in AnkhRewards) {
-                AddOneTimeLoot(reward, 0.15f);
+                AddOneTimeLoot(reward, 0.025f);
             }
         }
 
         // add cell phone ingredients
         foreach (var reward in PhoneRewards) {
-            AddOneTimeLoot(reward, 0.05f);
+            AddOneTimeLoot(reward, 0.0125f);
         }
 
         if (Main.hardMode) {
-            rng.Add((WorldGen.SavedOreTiers.Cobalt == TileID.Cobalt ? ItemID.CobaltBar : ItemID.PalladiumBar, Main.rand.Next(1, 5) * 3));
-            rng.Add((WorldGen.SavedOreTiers.Mythril == TileID.Mythril ? ItemID.MythrilBar : ItemID.OrichalcumBar, Main.rand.Next(1, 5) * 2), 0.5);
-            rng.Add((WorldGen.SavedOreTiers.Adamantite == TileID.Adamantite ? ItemID.AdamantiteBar : ItemID.TitaniumBar, Main.rand.Next(1, 5) * 1), 0.25);
+            rng.Add((WorldGen.SavedOreTiers.Cobalt == TileID.Cobalt ? ItemID.CobaltBar : ItemID.PalladiumBar, Main.rand.Next(1, 3) * 3), 0.25);
+            rng.Add((WorldGen.SavedOreTiers.Mythril == TileID.Mythril ? ItemID.MythrilBar : ItemID.OrichalcumBar, Main.rand.Next(1, 3) * 2), 0.1);
+            rng.Add((WorldGen.SavedOreTiers.Adamantite == TileID.Adamantite ? ItemID.AdamantiteBar : ItemID.TitaniumBar, Main.rand.Next(1, 5) * 1), 0.025);
 
-            rng.Add((ItemID.WoodenCrateHard, 1), 0.25);
-            rng.Add((ItemID.IronCrateHard, 1), 0.25);
-            rng.Add((ItemID.GoldenCrateHard, 1), 0.1);
+            rng.Add((ItemID.WoodenCrateHard, 1), 0.15);
+            rng.Add((ItemID.IronCrateHard, 1), 0.1);
+            rng.Add((ItemID.GoldenCrateHard, 1), 0.05);
 
             if (NPC.downedMechBoss1 && NPC.downedMechBoss2 && NPC.downedMechBoss3) {
-                rng.Add((ItemID.ChlorophyteBar, Main.rand.Next(1, 5) * 2), 0.5);
+                rng.Add((ItemID.ChlorophyteBar, Main.rand.Next(1, 5) * 2), 0.15);
             }
         } else {
-            rng.Add((ItemID.WoodenCrate, 1));
-            rng.Add((ItemID.IronCrate, 1));
-            rng.Add((ItemID.GoldenCrate, 1), 0.25);
+            rng.Add((ItemID.WoodenCrate, 1), 0.15);
+            rng.Add((ItemID.IronCrate, 1), 0.1);
+            rng.Add((ItemID.GoldenCrate, 1), 0.05);
         }
 
         // add healies
@@ -128,15 +127,16 @@ public class RewardSurpriseProjectile : ItemShowerSurpriseProjectile {
         // common rewards
         rng.Add((ItemID.HerbBag, Main.rand.Next(1, 5)), 0.05);
         rng.Add((ItemID.Geode, Main.rand.Next(1, 2)), 0.05);
-        rng.Add((ItemID.IronskinPotion, Main.rand.Next(2, 5) * 3), 0.25);
-        rng.Add((ItemID.ArcheryPotion, Main.rand.Next(2, 5) * 3), 0.25);
-        rng.Add((ItemID.InfernoPotion, Main.rand.Next(2, 5) * 3), 0.25);
-        rng.Add((ItemID.EndurancePotion, Main.rand.Next(2, 5) * 3), 0.25);
-        rng.Add((ItemID.SpelunkerPotion, Main.rand.Next(2, 5) * 3), 0.25);
-        rng.Add((ItemID.WrathPotion, Main.rand.Next(3, 5) * 3), 0.25);
-        rng.Add((ItemID.LuckPotion, Main.rand.Next(1, 3) * 3), 0.15);
-        rng.Add((ItemID.LuckPotionLesser, Main.rand.Next(3, 5) * 2), 0.2);
-        rng.Add((ItemID.LuckPotionGreater, Main.rand.Next(1, 3)), 0.1);
+        rng.Add((ItemID.IronskinPotion, Main.rand.Next(1, 3) * 2), 0.1);
+        rng.Add((ItemID.ArcheryPotion, Main.rand.Next(1, 3) * 2), 0.1);
+        rng.Add((ItemID.InfernoPotion, Main.rand.Next(1, 3) * 2), 0.1);
+        rng.Add((ItemID.EndurancePotion, Main.rand.Next(1, 3) * 2), 0.1);
+        rng.Add((ItemID.SpelunkerPotion, Main.rand.Next(1, 3) * 2), 0.1);
+        rng.Add((ItemID.WrathPotion, Main.rand.Next(1, 3) * 2), 0.1);
+
+        rng.Add((ItemID.LuckPotion, 1), 0.05);
+        rng.Add((ItemID.LuckPotionLesser, 1), 0.025);
+        rng.Add((ItemID.LuckPotionGreater, 1), 0.0125);
 
         return rng.Get();
     }

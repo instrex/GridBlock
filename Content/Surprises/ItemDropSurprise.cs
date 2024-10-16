@@ -11,6 +11,10 @@ using Terraria.Utilities;
 namespace GridBlock.Content.Surprises;
 
 internal class ItemDropSurprise : GridBlockSurprise {
+    public override float GetWeight(Player player, GridBlockChunk chunk) {
+        return 0.5f;
+    }
+
     static IEnumerable<Item> GetValidItems(Player player) => player.inventory.Where(i => !i.IsAir && i.pick == 0);
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
         return GetValidItems(player).Count() > 3;
@@ -20,7 +24,7 @@ internal class ItemDropSurprise : GridBlockSurprise {
         var items = new WeightedRandom<Item>(GetValidItems(player)
             .Select(i => new Tuple<Item, double>(i, 1.0)).ToArray());
 
-        var amountToDrop = Main.rand.Next(1, items.elements.Count / 2);
+        var amountToDrop = Main.rand.Next(1, items.elements.Count / 3);
         for (var i = 0; i < amountToDrop; i++) {
             var item = items.Get();
             items.elements.RemoveAll(i => i.Item1 == item);
@@ -31,7 +35,7 @@ internal class ItemDropSurprise : GridBlockSurprise {
 
             var k = Item.NewItem(player.GetSource_FromThis(), player.getRect(), clone);
             Main.item[k].velocity = Main.rand.NextVector2Unit() * Main.rand.NextFloat(2, 8);
-            Main.item[k].noGrabDelay = Main.rand.Next(60 * 2, 60 * 4);
+            Main.item[k].noGrabDelay = Main.rand.Next(60 * 1, 60 * 3);
         }
     }
 }

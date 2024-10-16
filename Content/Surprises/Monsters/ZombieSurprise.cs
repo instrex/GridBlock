@@ -10,7 +10,7 @@ namespace GridBlock.Content.Surprises;
 public class ZombieSurprise : GridBlockSurprise.ProjectileSpawner<ZombieSurpriseProjectile> {
     public override bool IsNegative => true;
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
-        return chunk.ContentAnalysis.SuitableForHordeEvents && (!Main.dayTime || (chunk.TileCoord.Y > Main.worldSurface && chunk.TileCoord.Y < Main.UnderworldLayer));
+        return !Main.hardMode && chunk.ContentAnalysis.SuitableForHordeEvents && (!Main.dayTime || (chunk.TileCoord.Y > Main.worldSurface && chunk.TileCoord.Y < Main.UnderworldLayer));
     }
 }
 
@@ -63,7 +63,8 @@ public class ZombieSurpriseProjectile : AmbushSurpriseProjectile {
         rng.Add(NPCID.SmallTwiggyZombie);
         rng.Add(NPCID.BigTwiggyZombie);
 
-        rng.Add(NPCID.TorchZombie, 0.5);
+        rng.Add(NPCID.TorchZombie, 7);
+        rng.Add(NPCID.Ghost, 10);
 
         return rng.Get();
     }

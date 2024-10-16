@@ -9,6 +9,9 @@ namespace GridBlock.Content.Surprises;
 
 public class SkeletalSurprise : GridBlockSurprise.ProjectileSpawner<SkeletalSurpriseProjectile> {
     public override bool IsNegative => true;
+    public override float GetWeight(Player player, GridBlockChunk chunk) {
+        return player.ZoneDungeon ? 10f : 5f;
+    }
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
         return chunk.ContentAnalysis.SuitableForHordeEvents && chunk.TileCoord.Y > Main.worldSurface && chunk.TileCoord.Y < Main.UnderworldLayer;
     }
@@ -36,22 +39,59 @@ public class SkeletalSurpriseProjectile : AmbushSurpriseProjectile {
         var rng = new WeightedRandom<int>();
 
         if (Main.hardMode) {
-            rng.Add(NPCID.ArmoredSkeleton);
-            rng.Add(NPCID.SkeletonArcher);
-            rng.Add(NPCID.BlueArmoredBones);
+            rng.Add(NPCID.ArmoredSkeleton, 4);
+            rng.Add(NPCID.SkeletonArcher, 4);
+
+            rng.Add(NPCID.BlueArmoredBones, (NPC.downedPlantBoss ? 4 : 0.5) / 4);
+            rng.Add(NPCID.BlueArmoredBonesMace, (NPC.downedPlantBoss ? 4 : 0.5) / 4);
+            rng.Add(NPCID.BlueArmoredBonesNoPants, (NPC.downedPlantBoss ? 4 : 0.5) / 4);
+            rng.Add(NPCID.BlueArmoredBonesSword, (NPC.downedPlantBoss ? 4 : 0.5) / 4);
+
+            rng.Add(NPCID.RustyArmoredBonesAxe, (NPC.downedPlantBoss ? 4 : 0.5) / 4);
+            rng.Add(NPCID.RustyArmoredBonesSword, (NPC.downedPlantBoss ? 4 : 0.5) / 4);
+            rng.Add(NPCID.RustyArmoredBonesSwordNoArmor, (NPC.downedPlantBoss ? 4 : 0.5) / 4);
+            rng.Add(NPCID.RustyArmoredBonesFlail, (NPC.downedPlantBoss ? 4 : 0.5) / 4);
+
+            rng.Add(NPCID.HellArmoredBones, (NPC.downedPlantBoss ? 4 : 0.5) / 4);
+            rng.Add(NPCID.HellArmoredBonesMace, (NPC.downedPlantBoss ? 4 : 0.5) / 4);
+            rng.Add(NPCID.HellArmoredBonesSpikeShield, (NPC.downedPlantBoss ? 4 : 0.5) / 4);
+            rng.Add(NPCID.HellArmoredBonesSword, (NPC.downedPlantBoss ? 4 : 0.5) / 4);
+
+            if (NPC.downedPlantBoss) {
+                rng.Add(NPCID.Paladin, 1);
+                rng.Add(NPCID.Necromancer, 0.5);
+                rng.Add(NPCID.NecromancerArmored, 0.5);
+                rng.Add(NPCID.RaggedCaster, 0.5);
+                rng.Add(NPCID.RaggedCasterOpenCoat, 0.5);
+                rng.Add(NPCID.DiabolistRed, 0.5);
+                rng.Add(NPCID.DiabolistWhite, 0.5);
+                rng.Add(NPCID.SkeletonCommando, 1);
+                rng.Add(NPCID.SkeletonSniper, 1);
+                rng.Add(NPCID.TacticalSkeleton, 1);
+                rng.Add(NPCID.GiantCursedSkull, 1);
+                rng.Add(NPCID.BoneLee, 1);
+                rng.Add(NPCID.DungeonSpirit, 1);
+            }
+
         } else {
-            rng.Add(NPCID.Skeleton);
-            rng.Add(NPCID.SmallSkeleton);
-            rng.Add(NPCID.BigSkeleton);
-            rng.Add(NPCID.HeadacheSkeleton);
-            rng.Add(NPCID.SmallHeadacheSkeleton);
-            rng.Add(NPCID.BigHeadacheSkeleton);
-            rng.Add(NPCID.MisassembledSkeleton);
-            rng.Add(NPCID.SmallMisassembledSkeleton);
-            rng.Add(NPCID.BigMisassembledSkeleton);
-            rng.Add(NPCID.PantlessSkeleton);
-            rng.Add(NPCID.SmallPantlessSkeleton);
-            rng.Add(NPCID.BigPantlessSkeleton);
+            rng.Add(NPCID.Skeleton, 1.0 / 12);
+            rng.Add(NPCID.SmallSkeleton, 1.0 / 12);
+            rng.Add(NPCID.BigSkeleton, 1.0 / 12);
+            rng.Add(NPCID.HeadacheSkeleton, 1.0 / 12);
+            rng.Add(NPCID.SmallHeadacheSkeleton, 1.0 / 12);
+            rng.Add(NPCID.BigHeadacheSkeleton, 1.0 / 12);
+            rng.Add(NPCID.MisassembledSkeleton, 1.0 / 12);
+            rng.Add(NPCID.SmallMisassembledSkeleton, 1.0 / 12);
+            rng.Add(NPCID.BigMisassembledSkeleton, 1.0 / 12);
+            rng.Add(NPCID.PantlessSkeleton, 1.0 / 12);
+            rng.Add(NPCID.SmallPantlessSkeleton, 1.0 / 12);
+            rng.Add(NPCID.BigPantlessSkeleton, 1.0 / 12);
+
+            if (NPC.downedBoss3) {
+                rng.Add(NPCID.AngryBones, 4);
+                rng.Add(NPCID.DarkCaster, 4);
+                rng.Add(NPCID.CursedSkull, 4);
+            }
         }
 
         rng.Add(NPCID.SkeletonTopHat, 0.1);

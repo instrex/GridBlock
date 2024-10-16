@@ -120,8 +120,8 @@ EchoDyeSurprise: {
 }
 
 GlowDyeSurprise: {
-	$parentVal: Flashbang
-	Message: Light mode enabled!
+	$parentVal: Мои глаза
+	Message: Я теперь всё вижу...
 }
 
 HallowConversionSurprise: {
@@ -149,6 +149,11 @@ ReforgeSurprise: {
 	Message: ... так что, круто вышло?
 }
 
+PantsSurprise: {
+	$parentVal: Слабый ветерок
+	Message: Почему все на меня смотрят?
+}
+
 EyeSurprise: Они смотрят
 HellHordeSurprise: Восставшие из ада
 IceHordeSurprise: Холодное приветствие
@@ -161,3 +166,5 @@ EvilHordeSurprise: Зло не дремлет
 BigIceHordeSurprise: Ой, мороз-мороз
 DesertHordeSurprise: Пустынные твари
 BigDesertHordeSurprise: Проклятье Фараона
+WyvernSurprise: Унесённые ветром
+MartianSurprise: Гости из будущего

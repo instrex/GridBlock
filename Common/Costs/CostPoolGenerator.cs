@@ -101,26 +101,36 @@ public static class CostPoolGenerator {
             new(WorldGen.crimson ? ItemID.TissueSample : ItemID.ShadowScale, 5),
             new(ItemID.GoldCoin, 5),
             new(ItemID.GoldCoin, 10, 0.25),
-            new(ItemID.WaterCandle),
-            new(ItemID.ManaCrystal, 1, 0.5),
-            new(ItemID.ManaCrystal, 3, 0.25),
+            new(ItemID.WaterCandle, 1, 0.25),
+            new(ItemID.ManaCrystal, 1, 0.25),
+            new(ItemID.ManaCrystal, 3, 0.1),
             new(Main.hardMode ? ItemID.WoodenCrateHard : ItemID.WoodenCrate, 1, 0.25),
             new(Main.hardMode ? ItemID.IronCrateHard : ItemID.IronCrate, 1, 0.25),
             new(Main.hardMode ? ItemID.GoldenCrateHard : ItemID.GoldenCrate, 1, 0.25),
+            new(ItemID.LargeAmethyst, 1, 0.1),
+            new(ItemID.LargeRuby, 1, 0.1),
+            new(ItemID.LargeEmerald, 1, 0.1),
+            new(ItemID.LargeSapphire, 1, 0.1),
+            new(ItemID.LargeDiamond, 1, 0.1),
+            new(ItemID.LargeTopaz, 1, 0.1),
+            new(ItemID.LargeAmber, 1, 0.05),
         ];
 
         if (Main.hardMode) {
             advancedGroup.AddRange([
-                new(ItemID.LifeCrystal, 1),
-                new(ItemID.LifeCrystal, 2, 0.25),
+                new(ItemID.LifeCrystal, 1, 0.25),
+                new(ItemID.LifeCrystal, 2, 0.1),
                 new(WorldGen.SavedOreTiers.Cobalt == TileID.Cobalt ? ItemID.CobaltBar : ItemID.PalladiumBar, 2),
                 new(WorldGen.SavedOreTiers.Mythril == TileID.Mythril ? ItemID.MythrilBar : ItemID.OrichalcumBar, 2),
                 new(WorldGen.SavedOreTiers.Adamantite == TileID.Adamantite ? ItemID.AdamantiteBar : ItemID.TitaniumBar, 2),
-                new(ItemID.ChlorophyteBar, 1, 0.5),
-                new(ItemID.ChlorophyteBar, 2, 0.15),
-                new(ItemID.SoulofFlight, 6),
-                new(ItemID.SoulofLight, 6),
-                new(ItemID.SoulofNight, 6),
+                new(ItemID.ChlorophyteBar, 1, 0.2),
+                new(ItemID.ChlorophyteBar, 2, 0.1),
+                new(ItemID.SoulofFlight, 2, 0.25),
+                new(ItemID.SoulofFlight, 4, 0.1),
+                new(ItemID.SoulofLight, 2, 0.25),
+                new(ItemID.SoulofLight, 4, 0.1),
+                new(ItemID.SoulofNight, 2, 0.25),
+                new(ItemID.SoulofNight, 4, 0.1),
                 new(ItemID.TurtleShell, 1, 0.25),
             ]);
 
@@ -139,8 +149,8 @@ public static class CostPoolGenerator {
 
             if (NPC.downedPlantBoss) {
                 advancedGroup.Add(new(ItemID.ShroomiteBar, 3, 0.5));
-                advancedGroup.Add(new(ItemID.LifeFruit, 2, 0.25));
-                advancedGroup.Add(new(ItemID.LifeFruit, 4, 0.05));
+                advancedGroup.Add(new(ItemID.LifeFruit, 1, 0.25));
+                advancedGroup.Add(new(ItemID.LifeFruit, 2, 0.05));
             }
         }
 
@@ -226,7 +236,7 @@ public static class CostPoolGenerator {
             ]);
 
             if (NPC.downedPlantBoss) {
-                candidates.Add(new(ItemID.Ectoplasm, 2, 3));
+                candidates.Add(new(ItemID.Ectoplasm, 2, 2));
             }
         }
 

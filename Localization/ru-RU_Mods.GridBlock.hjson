@@ -21,6 +21,7 @@ Projectiles: {
 	// DesertHordeSurpriseProjectile.DisplayName: Desert Horde Surprise Projectile
 	// EvilHordeSurpriseProjectile.DisplayName: Evil Horde Surprise Projectile
 	// HallowHordeSurpriseProjectile.DisplayName: Hallow Horde Surprise Projectile
+	// MartianSurpriseProjectile.DisplayName: Martian Surprise Projectile
 }
 
 HoldToUnlock: Удерживайте для открытия!

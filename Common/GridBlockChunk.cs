@@ -102,7 +102,7 @@ public class GridBlockChunk(int Id) {
                     data.WallSpotsCount++;
 
                 // count spots for placeable torches/1x1 tiles
-                if (Framing.GetTileSafely(x, y + 1).HasTile)
+                if (!tile.HasTile && Framing.GetTileSafely(x, y + 1).HasTile)
                     data.Placeable1x1SpotsCount++;
 
                 if (tile.HasTile) {
@@ -255,10 +255,8 @@ public class GridBlockChunk(int Id) {
             return;
 
         if (Group == CostGroup.PaidReward) {
-            var plr = player.GetModPlayer<GridBlockPlayer>();
             UnlockCost.type = ItemID.GoldCoin;
-            UnlockCost.stack = (int)((Main.hardMode ? CostPoolGenerator.RewardChunkBasePriceHardmode :  CostPoolGenerator.RewardChunkBasePrice) 
-                * (1f + plr.RichChunkRewards.Count(i => RewardSurpriseProjectile.OneTimeRewards.Contains(i.type)) * CostPoolGenerator.RewardChunkIncrease));
+            UnlockCost.stack = Main.hardMode ? 35 : 15;
             UnlockCost.value = Item.buyPrice(gold: UnlockCost.stack);
 
             return;
@@ -446,7 +444,7 @@ public class GridBlockChunk(int Id) {
 
             if (weight <= 0) continue;
 
-            eventRng.Add(surprise, weight * (surprise.IsNegative ? 0.75f : 1.0f));
+            eventRng.Add(surprise, weight * (surprise.IsNegative ? 0.85f : 1.0f));
         }
 
         if (eventRng.elements.Count > 0) {

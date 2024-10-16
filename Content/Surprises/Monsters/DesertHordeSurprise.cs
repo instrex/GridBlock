@@ -9,6 +9,10 @@ namespace GridBlock.Content.Surprises;
 
 public class DesertHordeSurprise : GridBlockSurprise.ProjectileSpawner<DesertHordeSurpriseProjectile> {
     public override bool IsNegative => true;
+    public override float GetWeight(Player player, GridBlockChunk chunk) {
+        return 5f;
+    }
+
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
         return Main.hardMode && player.ZoneDesert && chunk.ContentAnalysis.SuitableForHordeEvents;
     }
@@ -35,25 +39,22 @@ public class DesertHordeSurpriseProjectile : AmbushSurpriseProjectile {
     public override int GetNpcType() {
         var rng = new WeightedRandom<int>();
 
-        rng.Add(NPCID.Vulture);
-        rng.Add(NPCID.Antlion);
-        rng.Add(NPCID.WalkingAntlion);
-        rng.Add(NPCID.FlyingAntlion);
-        rng.Add(NPCID.GiantFlyingAntlion);
-        rng.Add(NPCID.GiantWalkingAntlion);
-        rng.Add(NPCID.SandSlime);
-
-        if (Main.hardMode && (Projectile.position.Y > Main.worldSurface || Main.raining)) {
+        if (Main.hardMode) {
             rng.Add(532);
             rng.Add(NPCID.DesertScorpionWalk);
             rng.Add(NPCID.DesertLamiaDark);
             rng.Add(NPCID.DesertLamiaLight);
             rng.Add(NPCID.DesertGhoul);
             rng.Add(NPCID.DuneSplicerHead);
-        }
-
-        if (Main.hardMode) {
             rng.Add(NPCID.Mummy);
+        } else {
+            rng.Add(NPCID.Vulture);
+            rng.Add(NPCID.Antlion);
+            rng.Add(NPCID.WalkingAntlion);
+            rng.Add(NPCID.FlyingAntlion);
+            rng.Add(NPCID.GiantFlyingAntlion);
+            rng.Add(NPCID.GiantWalkingAntlion);
+            rng.Add(NPCID.SandSlime);
         }
 
         return rng.Get();

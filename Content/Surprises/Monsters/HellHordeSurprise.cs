@@ -9,6 +9,10 @@ namespace GridBlock.Content.Surprises;
 
 public class HellHordeSurprise : GridBlockSurprise.ProjectileSpawner<HellHordeSurpriseProjectile> {
     public override bool IsNegative => true;
+    public override float GetWeight(Player player, GridBlockChunk chunk) {
+        return 5f;
+    }
+
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
         return chunk.EmptyTileAmount > 100 && chunk.TileCoord.Y >= Main.UnderworldLayer;
     }
@@ -34,6 +38,11 @@ public class HellHordeSurpriseProjectile : AmbushSurpriseProjectile {
 
     public override int GetNpcType() {
         var rng = new WeightedRandom<int>();
+
+        if (NPC.downedMechBossAny) {
+            rng.Add(NPCID.RedDevil, 10);
+            rng.Add(NPCID.Lavabat, 10);
+        }
 
         rng.Add(NPCID.Hellbat);
         rng.Add(NPCID.LavaSlime);

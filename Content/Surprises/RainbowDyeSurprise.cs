@@ -8,6 +8,10 @@ using Terraria.ID;
 namespace GridBlock.Content.Surprises;
 
 public class RainbowDyeSurprise : GridBlockSurprise {
+    public override float GetWeight(Player player, GridBlockChunk chunk) {
+        return 0.25f;
+    }
+
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
         return chunk.ContentAnalysis.FullnessFactor >= 0.5f;
     }

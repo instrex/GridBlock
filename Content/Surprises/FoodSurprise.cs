@@ -8,16 +8,14 @@ using Terraria.Utilities;
 namespace GridBlock.Content.Surprises;
 
 public class FoodSurprise : GridBlockSurprise.ProjectileSpawner<FoodSurpriseProjectile> {
-    public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
-        return player.statLife < player.statLifeMax2;
-    }
+    
 }
 
 public class FoodSurpriseProjectile : ItemShowerSurpriseProjectile {
     public override void SetDefaults() {
         base.SetDefaults();
 
-        Projectile.timeLeft = Main.rand.Next(10, 20) * 5;
+        Projectile.timeLeft = Main.rand.Next(2, 6) * 5;
         ItemType = ItemID.Heart;
         SpawnInterval = 5;
     }
@@ -91,7 +89,7 @@ public class FoodSurpriseProjectile : ItemShowerSurpriseProjectile {
         rng.Add(ItemID.Bacon, 0.1);
         rng.Add(ItemID.BBQRibs, 0.1);
 
-        return base.GetItemTypeAndStack();
+        return (rng.Get(), 1);
     }
 
     public override void OnItemSpawned(Item item) {

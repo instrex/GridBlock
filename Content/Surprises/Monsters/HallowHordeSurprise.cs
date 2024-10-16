@@ -9,6 +9,10 @@ namespace GridBlock.Content.Surprises;
 
 public class HallowHordeSurprise : GridBlockSurprise.ProjectileSpawner<HallowHordeSurpriseProjectile> {
     public override bool IsNegative => true;
+    public override float GetWeight(Player player, GridBlockChunk chunk) {
+        return 8f;
+    }
+
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
         return Main.hardMode && player.ZoneHallow && chunk.ContentAnalysis.SuitableForHordeEvents;
     }
@@ -33,12 +37,21 @@ public class HallowHordeSurpriseProjectile : AmbushSurpriseProjectile {
     }
 
     public override int GetNpcType() {
+        if (CurrentNpcIndex == 0 && Main.rand.NextFloat() < 0.05f) {
+            return NPCID.BigMimicHallow;
+        }
+
         var rng = new WeightedRandom<int>();
+
+        rng.Add(NPCID.IlluminantSlime);
+        rng.Add(NPCID.IlluminantBat);
+        rng.Add(NPCID.ChaosElemental);
+        rng.Add(NPCID.EnchantedSword);
 
         rng.Add(NPCID.Pixie);
         rng.Add(NPCID.Unicorn);
         rng.Add(NPCID.RainbowSlime);
-        rng.Add(NPCID.LightMummy, 0.25);
+        rng.Add(NPCID.LightMummy, 1);
 
         if (!Main.dayTime) rng.Add(NPCID.Gastropod);
 

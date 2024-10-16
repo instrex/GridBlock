@@ -9,6 +9,10 @@ namespace GridBlock.Content.Surprises;
 
 public class JungleSurprise : GridBlockSurprise.ProjectileSpawner<JungleSurpriseProjectile> {
     public override bool IsNegative => true;
+    public override float GetWeight(Player player, GridBlockChunk chunk) {
+        return 8f;
+    }
+
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
         return chunk.ContentAnalysis.SuitableForHordeEvents && player.ZoneJungle;
     }
@@ -35,19 +39,33 @@ public class JungleSurpriseProjectile : AmbushSurpriseProjectile {
     public override int GetNpcType() {
         var rng = new WeightedRandom<int>();
 
+        if (Main.hardMode) {
+            rng.Add(NPCID.JungleCreeper, 10);
+            rng.Add(NPCID.MossHornet, 10);
+            rng.Add(NPCID.AngryTrapper, 10);
+            rng.Add(NPCID.Arapaima, 10);
+            rng.Add(NPCID.GiantTortoise, 10);
+            rng.Add(NPCID.Moth, 0.5);
+        }
+
+        if (!Main.dayTime) rng.Add(NPCID.DoctorBones, 0.015);
+
         rng.Add(NPCID.JungleSlime);
+        rng.Add(NPCID.JungleBat);
+        rng.Add(NPCID.ManEater);
+        rng.Add(NPCID.Piranha);
         rng.Add(NPCID.SpikedJungleSlime);
-        rng.Add(NPCID.Hornet);
-        rng.Add(NPCID.HornetFatty);
-        rng.Add(NPCID.HornetLeafy);
-        rng.Add(NPCID.HornetHoney);
-        rng.Add(NPCID.HornetSpikey);
-        rng.Add(NPCID.HornetStingy);
-        rng.Add(NPCID.BigHornetFatty);
-        rng.Add(NPCID.BigHornetLeafy);
-        rng.Add(NPCID.BigHornetHoney);
-        rng.Add(NPCID.BigHornetSpikey);
-        rng.Add(NPCID.BigHornetStingy);
+        rng.Add(NPCID.Hornet, 0.1);
+        rng.Add(NPCID.HornetFatty, 0.1);
+        rng.Add(NPCID.HornetLeafy, 0.1);
+        rng.Add(NPCID.HornetHoney, 0.1);
+        rng.Add(NPCID.HornetSpikey, 0.1);
+        rng.Add(NPCID.HornetStingy, 0.1);
+        rng.Add(NPCID.BigHornetFatty, 0.1);
+        rng.Add(NPCID.BigHornetLeafy, 0.1);
+        rng.Add(NPCID.BigHornetHoney, 0.1);
+        rng.Add(NPCID.BigHornetSpikey, 0.1);
+        rng.Add(NPCID.BigHornetStingy, 0.1);
 
         return rng.Get();
     }

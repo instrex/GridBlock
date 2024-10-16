@@ -1,4 +1,5 @@
 ﻿using GridBlock.Common.Costs;
+using GridBlock.Content.Buffs;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
@@ -21,7 +22,6 @@ public class GridBlockMapLayer : ModMapLayer {
         var scale = Main.mapFullscreen ? Main.mapFullscreenScale : 4f;
 
         var pixel = ModContent.Request<Texture2D>("GridBlock/Assets/Pixel").Value;
-
         for (var i = 0; i < gridBlock.Chunks.Bounds.X * gridBlock.Chunks.Bounds.Y; i++) {
             var coord = new Point(i % gridBlock.Chunks.Bounds.X, i / gridBlock.Chunks.Bounds.X);
             if (coord.Y == 0 || coord.Y == gridBlock.Chunks.Bounds.Y - 1 || coord.X == 0 || coord.X == gridBlock.Chunks.Bounds.X - 1)
@@ -56,6 +56,8 @@ public class GridBlockMapLayer : ModMapLayer {
             }
 
             if (chunk.UnlockCost != null) {
+                var eventHideItem = Main.LocalPlayer.HasBuff<MysteryBuff>() || chunk.Modifier.HasFlag(ChunkModifier.Mystery);
+
                 var anim = Main.itemAnimations[chunk.UnlockCost.type];
                 var tex = chunk.Group == CostGroup.PaidReward ? 
                     ModContent.Request<Texture2D>("GridBlock/Assets/RewardIndicator")
@@ -63,7 +65,7 @@ public class GridBlockMapLayer : ModMapLayer {
 
                 context.Draw(tex.Value,
                     pos + new Vector2(gridBlock.Chunks.CellSize * 0.5f),
-                    Color.White,
+                    eventHideItem ? Color.Black : Color.White,
                     new SpriteFrame(1, (byte)(anim is null ? 1 : anim.FrameCount), 0, 0),
                     scale * 0.5f, scale * 0.5f,
                     Alignment.Center);

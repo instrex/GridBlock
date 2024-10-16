@@ -9,6 +9,10 @@ namespace GridBlock.Content.Surprises;
 
 public class IceHordeSurprise : GridBlockSurprise.ProjectileSpawner<IceHordeSurpriseProjectile> {
     public override bool IsNegative => true;
+    public override float GetWeight(Player player, GridBlockChunk chunk) {
+        return 8f;
+    }
+
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
         return chunk.ContentAnalysis.SuitableForHordeEvents && player.ZoneSnow;
     }
@@ -18,7 +22,7 @@ public class IceHordeSurpriseProjectile : AmbushSurpriseProjectile {
     public override void SetDefaults() {
         base.SetDefaults();
 
-        Projectile.timeLeft = (Main.rand.Next(2, 4) * (Main.rand.NextFloat() < 0.1f ? 3 : 1)) * SpawnInterval;
+        Projectile.timeLeft = (Main.rand.Next(4, 8) * (Main.rand.NextFloat() < 0.25f ? 2 : 1)) * SpawnInterval;
         NpcType = NPCID.IceSlime;
     }
 
@@ -46,11 +50,11 @@ public class IceHordeSurpriseProjectile : AmbushSurpriseProjectile {
         }
 
         if (Main.hardMode) {
-            if (Projectile.position.Y > Main.rockLayer) rng.Add(NPCID.ArmoredViking);
-            rng.Add(NPCID.IceTortoise);
-            rng.Add(NPCID.IceElemental);
-            rng.Add(NPCID.Wolf);
-            rng.Add(NPCID.IcyMerman);
+            if (Projectile.position.Y > Main.rockLayer) rng.Add(NPCID.ArmoredViking, 10);
+            rng.Add(NPCID.IceTortoise, 10);
+            rng.Add(NPCID.IceElemental, 10);
+            rng.Add(NPCID.Wolf, 10);
+            rng.Add(NPCID.IcyMerman, 10);
             rng.Add(NPCID.IceMimic, 0.25);
         }
 

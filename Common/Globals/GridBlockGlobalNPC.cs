@@ -18,10 +18,10 @@ internal class GridBlockGlobalNPC : GlobalNPC {
         CheckAndSpawnDice(npc, NPCID.QueenBee, nameof(NPCID.QueenBee));
         CheckAndSpawnDice(npc, NPCID.SkeletronHead, nameof(NPCID.SkeletronHead));
         CheckAndSpawnDice(npc, NPCID.Deerclops, nameof(NPCID.Deerclops));
-        CheckAndSpawnDice(npc, NPCID.WallofFlesh, nameof(NPCID.WallofFlesh), 5);
+        CheckAndSpawnDice(npc, NPCID.WallofFlesh, nameof(NPCID.WallofFlesh), 6);
         CheckAndSpawnDice(npc, NPCID.QueenSlimeBoss, nameof(NPCID.QueenSlimeBoss));
         CheckAndSpawnDice(npc, NPCID.Retinazer, nameof(NPCID.Retinazer), 1);
-        CheckAndSpawnDice(npc, NPCID.Spazmatism, nameof(NPCID.Spazmatism), 2);
+        CheckAndSpawnDice(npc, NPCID.Spazmatism, nameof(NPCID.Spazmatism), 1);
         CheckAndSpawnDice(npc, NPCID.SkeletronPrime, nameof(NPCID.SkeletronPrime));
         CheckAndSpawnDice(npc, NPCID.TheDestroyer, nameof(NPCID.TheDestroyer));
         CheckAndSpawnDice(npc, NPCID.Plantera, nameof(NPCID.Plantera));
@@ -32,7 +32,7 @@ internal class GridBlockGlobalNPC : GlobalNPC {
         CheckAndSpawnDice(npc, NPCID.MoonLordCore, nameof(NPCID.MoonLordCore), 10);
     }
 
-    static void CheckAndSpawnDice(NPC npc, int wantedType, string flag, int diceAmount = 3) {
+    static void CheckAndSpawnDice(NPC npc, int wantedType, string flag, int diceAmount = 2) {
         if (npc.type != wantedType)
             return;
 

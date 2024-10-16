@@ -8,6 +8,18 @@ namespace GridBlock.Content.Surprises;
 
 public class PetSurprise : GridBlockSurprise {
     public override void Trigger(Player player, GridBlockChunk chunk) {
+        for (var i = 0; i < 2; i++) {
+            var equip = player.miscEquips[i];
+            if (!equip.IsAir) {
+                var clone = equip.Clone();
+                equip.TurnToAir();
+
+                var k = Item.NewItem(player.GetSource_FromThis(), player.getRect(), clone);
+                Main.item[k].velocity = Main.rand.NextVector2Unit() * Main.rand.NextFloat(2, 6);
+                Main.item[k].noGrabDelay = 60 * 2;
+            }
+        }
+
         var rng = new WeightedRandom<int>();
         rng.Add(BuffID.BabyDinosaur);
         rng.Add(BuffID.BabyEater);

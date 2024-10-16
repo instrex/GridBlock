@@ -10,7 +10,7 @@ namespace GridBlock.Content.Surprises;
 public class BigIceHordeSurprise : GridBlockSurprise.ProjectileSpawner<BigIceHordeSurpriseProjectile> {
     public override bool IsNegative => true;
     public override float GetWeight(Player player, GridBlockChunk chunk) {
-        return 0.5f;
+        return 2f;
     }
 
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {

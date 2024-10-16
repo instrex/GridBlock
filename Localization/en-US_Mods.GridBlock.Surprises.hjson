@@ -149,6 +149,11 @@ ReforgeSurprise: {
 	Message: ... was it good or nah?
 }
 
+PantsSurprise: {
+	$parentVal: You feel a gender breeze
+	Message: Why does everyone keep staring?
+}
+
 EyeSurprise: They are watching
 HellHordeSurprise: They came from hell
 IceHordeSurprise: Cold welcome
@@ -161,3 +166,5 @@ EvilHordeSurprise: No rest for the wicked
 BigIceHordeSurprise: Snow Halation
 DesertHordeSurprise: Sandy Bastards
 BigDesertHordeSurprise: Pharaoh's Curse
+WyvernSurprise: Spirited Away
+MartianSurprise: Glorb

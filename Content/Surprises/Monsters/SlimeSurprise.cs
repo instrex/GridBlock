@@ -33,7 +33,29 @@ public class SlimeSurpriseProjectile : AmbushSurpriseProjectile {
     }
 
     public override int GetNpcType() {
+        if (CurrentNpcIndex == 1 && Main.rand.NextFloat() < 0.1f) {
+            return Main.hardMode ? NPCID.QueenSlimeBoss : NPCID.KingSlime;
+        }
+
         var rng = new WeightedRandom<int>();
+
+        if (Main.hardMode) {
+            rng.Add(NPCID.KingSlime);
+            rng.Add(NPCID.ShimmerSlime);
+            rng.Add(NPCID.ToxicSludge);
+            rng.Add(NPCID.CorruptSlime);
+            rng.Add(NPCID.Slimer);
+            rng.Add(NPCID.Crimslime);
+            rng.Add(NPCID.IlluminantSlime);
+            rng.Add(NPCID.RainbowSlime);
+            rng.Add(NPCID.HoppinJack);
+            rng.Add(NPCID.QueenSlimeMinionBlue);
+            rng.Add(NPCID.QueenSlimeMinionPink);
+            rng.Add(NPCID.QueenSlimeMinionPurple);
+
+            return rng.Get();
+        }
+
         rng.Add(NPCID.BlueSlime);
         rng.Add(NPCID.GreenSlime);
         rng.Add(NPCID.RedSlime, 0.75);
