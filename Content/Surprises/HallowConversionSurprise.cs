@@ -18,7 +18,7 @@ public class HallowConversionSurprise : GridBlockSurprise {
         for (var x = 0; x < GridBlockWorld.Instance.Chunks.CellSize; x++) {
             for (var y = 0; y < GridBlockWorld.Instance.Chunks.CellSize; y++) {
                 var tileCoord = chunk.TileCoord + new Point(x, y);
-                WorldGen.Convert(tileCoord.X, tileCoord.Y, BiomeConversionID.Hallow, 2);
+                WorldGen.Convert(tileCoord.X, tileCoord.Y, BiomeConversionID.Hallow, Main.rand.Next(1, 4));
             }
         }
     }

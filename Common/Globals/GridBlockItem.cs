@@ -31,7 +31,7 @@ public class GridBlockItem : GlobalItem {
         var rect = item.getRect();
         rect.Inflate(10, 10);
 
-        if (Main.rand.NextFloat() < 0.5f) {
+        if (Main.rand.NextFloat() < 0.2f) {
             var dust = Dust.NewDustDirect(rect.Location.ToVector2(), rect.Width, rect.Height, DustID.GoldCoin, Main.rand.NextFloat(-1, 1), Main.rand.NextFloat(-2, 0));
             dust.noGravity = true;
             dust.fadeIn = 1.1f;

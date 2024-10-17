@@ -143,7 +143,7 @@ public class GridBlockPlayer : ModPlayer {
                     }
 
                     Player.Bottom = Player.Bottom with { Y = bottom.WorldBounds.Top + 2 };
-                    Player.velocity.Y = Player.justJumped || (Player.grapCount > 0 && Player.velocity.Y < 0) ? Player.velocity.Y : 0;
+                    Player.velocity.Y = Player.justJumped || Player.velocity.Y < 0 || (Player.grapCount > 0 && Player.velocity.Y < 0) ? Player.velocity.Y : 0;
                     Player.gfxOffY = 0;
 
                     if (Player.shimmering) {

@@ -1,4 +1,5 @@
 ﻿using GridBlock.Common;
+using GridBlock.Common.Globals;
 using GridBlock.Common.Surprises;
 using Terraria;
 using Terraria.ID;
@@ -7,6 +8,10 @@ using Terraria.Utilities;
 namespace GridBlock.Content.Surprises;
 
 public class PetSurprise : GridBlockSurprise {
+    public override float GetWeight(Player player, GridBlockChunk chunk) {
+        return 0.5f;
+    }
+
     public override void Trigger(Player player, GridBlockChunk chunk) {
         for (var i = 0; i < 2; i++) {
             var equip = player.miscEquips[i];
@@ -16,6 +21,7 @@ public class PetSurprise : GridBlockSurprise {
 
                 var k = Item.NewItem(player.GetSource_FromThis(), player.getRect(), clone);
                 Main.item[k].velocity = Main.rand.NextVector2Unit() * Main.rand.NextFloat(2, 6);
+                Main.item[k].GetGlobalItem<GridBlockItem>().IsGridBlockReward = true;
                 Main.item[k].noGrabDelay = 60 * 2;
             }
         }

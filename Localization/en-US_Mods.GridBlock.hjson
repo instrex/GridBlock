@@ -22,6 +22,7 @@ Projectiles: {
 	EvilHordeSurpriseProjectile.DisplayName: Evil Horde Surprise Projectile
 	HallowHordeSurpriseProjectile.DisplayName: Hallow Horde Surprise Projectile
 	MartianSurpriseProjectile.DisplayName: Martian Surprise Projectile
+	BarsSurpriseProjectile.DisplayName: Bars Surprise Projectile
 }
 
 HoldToUnlock: Hold to unlock!

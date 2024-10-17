@@ -151,9 +151,20 @@ ReforgeSurprise: {
 
 PantsSurprise: {
 	$parentVal: Слабый ветерок
-	Message: Почему все на меня смотрят?
+	Message: Почему все на меня так смотрят?
 }
 
+RerollNearbySurprise: {
+	$parentVal: Ваша Случайность
+	Message: Что-то вокруг действительно изменилось...
+}
+
+BarsSurprise: {
+	$parentVal: Тяжелый Метал
+	Message: Вот они, слитки!
+}
+
+MushroomConversionSurprise: ГРИБЫЫЫЫЫ
 EyeSurprise: Они смотрят
 HellHordeSurprise: Восставшие из ада
 IceHordeSurprise: Холодное приветствие

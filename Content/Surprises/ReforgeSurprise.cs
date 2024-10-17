@@ -21,12 +21,14 @@ public class ReforgeSurprise : GridBlockSurprise {
     }
 
     public override void Trigger(Player player, GridBlockChunk chunk) {
+        SoundEngine.PlaySound(SoundID.ResearchComplete, player.Center);
+
         var accs = player.armor.Where(i => i.accessory).ToList();
 
         var itemsToReforge = accs.Count / 2;
 
         for (var i = 0; i < itemsToReforge; i++) {
-            var acc = accs[i];
+            var acc = accs[Main.rand.Next(accs.Count)];
             accs.Remove(acc);
 
             var prefix = ItemLoader.ChoosePrefix(acc, Main.rand);

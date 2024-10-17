@@ -112,7 +112,20 @@ public class GridBlockWorld : ModSystem {
             chunk.Reroll();
 
         var playerChunks = Main.player.Where(p => p.active)
-            .Select(p => Chunks.GetByWorldPos(p.Center));
+            .SelectMany(p => {
+                var playerChunk = Chunks.GetByWorldPos(p.Center);
+
+                var dangerChunks = new List<GridBlockChunk>();
+
+                for (var x = -1; x <= 1; x++) {
+                    for (var y = -1; y <= 1; y++) {
+                        if (Chunks.GetByChunkCoord(playerChunk.ChunkCoord + new Point(x, y)) is GridBlockChunk ass)
+                            dangerChunks.Add(ass);
+                    }
+                }
+
+                return dangerChunks;
+            });
 
         var closeCandidates = Chunks.GetAll(c => c.IsUnlocked && c.Group != CostGroup.Spawn && !c.ContentAnalysis.HasPylons)
             .Except(playerChunks)

@@ -14,7 +14,7 @@ public class BigIceHordeSurprise : GridBlockSurprise.ProjectileSpawner<BigIceHor
     }
 
     public override bool CanBeTriggered(Player player, GridBlockChunk chunk) {
-        return !Main.raining && player.ZoneSnow && chunk.ContentAnalysis.SuitableForHordeEvents;
+        return Main.hardMode && !Main.raining && player.ZoneSnow && chunk.ContentAnalysis.SuitableForHordeEvents;
     }
 
     public override void Trigger(Player player, GridBlockChunk chunk) {

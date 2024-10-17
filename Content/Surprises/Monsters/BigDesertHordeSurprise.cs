@@ -27,7 +27,7 @@ public class BigDesertHordeSurprise : GridBlockSurprise.ProjectileSpawner<BigDes
     }
 }
 
-public class BigDesertHordeSurpriseProjectile : AmbushSurpriseProjectile {
+public class BigDesertHordeSurpriseProjectile : DesertHordeSurpriseProjectile {
     public override void SetDefaults() {
         base.SetDefaults();
 

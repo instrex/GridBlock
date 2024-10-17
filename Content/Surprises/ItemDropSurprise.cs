@@ -1,4 +1,5 @@
 ﻿using GridBlock.Common;
+using GridBlock.Common.Globals;
 using GridBlock.Common.Surprises;
 using System;
 using System.Collections.Generic;
@@ -35,6 +36,7 @@ internal class ItemDropSurprise : GridBlockSurprise {
 
             var k = Item.NewItem(player.GetSource_FromThis(), player.getRect(), clone);
             Main.item[k].velocity = Main.rand.NextVector2Unit() * Main.rand.NextFloat(2, 8);
+            Main.item[k].GetGlobalItem<GridBlockItem>().IsGridBlockReward = true;
             Main.item[k].noGrabDelay = Main.rand.Next(60 * 1, 60 * 3);
         }
     }

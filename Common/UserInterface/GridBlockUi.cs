@@ -143,7 +143,7 @@ public class GridBlockUi {
                     var playerHasItem = nearbyChunk.CheckUnlockRequirementsForPlayer(Main.LocalPlayer, out var storageContext);
                     var playerInRangeOfUnlock = Main.LocalPlayer.Distance(worldBounds.Center()) < Main.screenHeight * 0.75f && !Main.LocalPlayer.dead;
                     var canUnlockChunk = playerHasItem && playerInRangeOfUnlock;
-                    var canRerollChunk = gridWorld.RerollCount > 0 && nearbyChunk.Group != CostGroup.PaidReward;
+                    var canRerollChunk = gridWorld.RerollCount > 0 && nearbyChunk.Group != CostGroup.PaidReward && !Main.playerInventory;
                     var textColor = playerHasItem ? canUnlockChunk && isHoveringChunk ? 
                         (eventDiscount && item.stack != stack ? (eventNegativeDiscount ? Color.Red : Color.LightGreen) : Color.Gold) 
                         : ItemRarity.GetColor(item.rare) : Color.Lerp(Color.Gray, Color.Red, 0.25f + MathF.Sin(Main.GlobalTimeWrappedHourly * 4) * 0.125f);
@@ -378,7 +378,7 @@ public class GridBlockUi {
                     }
 
                     if (isHoveringChunk && canRerollChunk && playerInRangeOfUnlock) {
-                        if (Main.mouseRight && Main.mouseRightRelease) {
+                        if (Main.mouseRight && Main.mouseRightRelease && Main.hasFocus) {
                             nearbyChunk.Reroll();
 
                             // TODO: sync
@@ -435,6 +435,10 @@ public class GridBlockUi {
                             nearbyChunk.Unlock(Main.LocalPlayer);
                             currentlyHoveredChunk = null;
                             _holdDuration = 0;
+
+                            Animations.Active.Add(new UnlockAnimation {
+                                Chunk = nearbyChunk
+                            });
 
                             if (eventHideItem) {
                                 Main.LocalPlayer.ClearBuff(ModContent.BuffType<MysteryBuff>());

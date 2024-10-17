@@ -150,10 +150,21 @@ ReforgeSurprise: {
 }
 
 PantsSurprise: {
-	$parentVal: You feel a gender breeze
+	$parentVal: Gentle Breeze
 	Message: Why does everyone keep staring?
 }
 
+RerollNearbySurprise: {
+	$parentVal: So Random
+	Message: Something around you definetely changed...
+}
+
+BarsSurprise: {
+	$parentVal: Heavy Metal
+	Message: Drop these bars!
+}
+
+MushroomConversionSurprise: Fungi Party
 EyeSurprise: They are watching
 HellHordeSurprise: They came from hell
 IceHordeSurprise: Cold welcome
