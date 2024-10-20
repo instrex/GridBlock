@@ -37,7 +37,7 @@ public class GridBlockWorld : ModSystem {
     /// <summary>
     /// Flags for each downed boss, signaling if rerolls from them have been obtained.
     /// </summary>
-    public HashSet<string> BossRerollsObtained { get; set; }
+    public HashSet<string> BossRerollsObtained { get; set; } = [];
 
     /// <summary>
     /// Flag signalizing one-time hardmode changes.
@@ -65,7 +65,7 @@ public class GridBlockWorld : ModSystem {
     }
 
     public override void OnWorldUnload() {
-        BossRerollsObtained = null;
+        BossRerollsObtained = [];
         WorldVersion = "";
         GridSeed = 0;
         Chunks = null;
@@ -196,9 +196,12 @@ public class GridBlockWorld : ModSystem {
         tag["GridVersion"] = WorldVersion;
         tag["GridSeed"] = GridSeed;
         tag[nameof(RerollCount)] = RerollCount;
-        tag[nameof(BossRerollsObtained)] = BossRerollsObtained.ToArray();
         tag[nameof(AppliedHardmodeChanges)] = AppliedHardmodeChanges;
         tag[nameof(AppliedPlantmodeChanges)] = AppliedPlantmodeChanges;
+
+        if (BossRerollsObtained != null) {
+            tag[nameof(BossRerollsObtained)] = BossRerollsObtained.ToArray();
+        }
 
         if (Chunks is null) {
             Mod.Logger.Warn("GridBlock Chunk data was null!");
