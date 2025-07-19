@@ -1,4 +1,5 @@
-﻿using GridBlock.Common.Costs;
+﻿using GridBlock.Common.Commands;
+using GridBlock.Common.Costs;
 using GridBlock.Common.Surprises;
 using GridBlock.Common.UserInterface;
 using GridBlock.Common.UserInterface.Animations;
@@ -8,6 +9,7 @@ using GridBlock.Content.Surprises;
 using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Terraria;
 using Terraria.Audio;
@@ -427,6 +429,11 @@ public class GridBlockChunk(int Id) {
             player.QuickSpawnItem(player.GetSource_FromThis(), ModContent.ItemType<ChunkDice>());
         }
 
+        if (SetNextSurpriseCommand.TryGetPendingSurprise(out var debugSurprise)) {
+            TriggerSurpriseWithFx(debugSurprise, player);
+            return;
+        }
+
         if (!triggerSurprises || Main.rand.NextFloat() > 0.5f)
             return;
 
@@ -448,37 +455,39 @@ public class GridBlockChunk(int Id) {
         }
 
         if (eventRng.elements.Count > 0) {
-            var surprise = eventRng.Get();
-            surprise.Trigger(player, this);
-
-            // save to history stack
-            player.GetModPlayer<GridBlockPlayer>().PushSurpriseHistory(surprise.Id);
-
-            // hide other animations
-            foreach (var anim in GridBlockUi.Animations.Active.OfType<SurpriseTextAnimation>()) {
-                anim.Lifetime = MathF.Max(anim.Lifetime, 60 * 5);
-            }
-
-            var localizationKey = $"Mods.GridBlock.Surprises.{surprise.GetType().Name}";
-            var messageLocalizationKey = $"{localizationKey}.Message";
-            var text = Language.GetTextValue(localizationKey);
-
-            // display funny text
-            var origin = (WorldCoordTopLeft + new Vector2(GridBlockWorld.Instance.Chunks.CellSize * 16 * 0.5f)).ToPoint();
-
-            var message = Language.GetTextValue(messageLocalizationKey);
-
-            var textColor = surprise.IsNegative ? Color.Red : Color.Gold;
-
-            GridBlockUi.Animations.Active.Add(new SurpriseTextAnimation {
-                Title = string.Concat(text, surprise.IsNegative ? "..." : "!"),
-                TitleColor = textColor,
-                Description = message == messageLocalizationKey ? null : message
-            });
-
-            var chatMessage = Language.GetTextValue("Mods.GridBlock.SurpriseTrigger", player.name, $"[c/{textColor.Hex3()}:{text}]");
-
-            Main.NewText(chatMessage, Color.White);
+            TriggerSurpriseWithFx(eventRng.Get(), player);
         }
+    }
+
+    void TriggerSurpriseWithFx(GridBlockSurprise surprise, Player player) { 
+        surprise.Trigger(player, this);
+
+        // save to history stack
+        player.GetModPlayer<GridBlockPlayer>().PushSurpriseHistory(surprise.Id);
+
+        // hide other animations
+        foreach (var anim in GridBlockUi.Animations.Active.OfType<SurpriseTextAnimation>()) {
+            anim.Lifetime = MathF.Max(anim.Lifetime, 60 * 5);
+        }
+
+        var localizationKey = $"Mods.GridBlock.Surprises.{surprise.GetType().Name}";
+        var messageLocalizationKey = $"{localizationKey}.Message";
+        var text = Language.GetTextValue(localizationKey);
+
+        // display funny text
+        var origin = (WorldCoordTopLeft + new Vector2(GridBlockWorld.Instance.Chunks.CellSize * 16 * 0.5f)).ToPoint();
+
+        var message = Language.GetTextValue(messageLocalizationKey);
+
+        var textColor = surprise.IsNegative ? Color.Red : Color.Gold;
+
+        GridBlockUi.Animations.Active.Add(new SurpriseTextAnimation {
+            Title = string.Concat(text, surprise.IsNegative ? "..." : "!"),
+            TitleColor = textColor,
+            Description = message == messageLocalizationKey ? null : message
+        });
+
+        var chatMessage = Language.GetTextValue("Mods.GridBlock.SurpriseTrigger", player.name, $"[c/{textColor.Hex3()}:{text}]");
+        Main.NewText(chatMessage, Color.White);
     }
 }

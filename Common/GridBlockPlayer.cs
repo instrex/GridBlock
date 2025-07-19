@@ -9,8 +9,10 @@ using Terraria;
 using Terraria.Audio;
 using Terraria.DataStructures;
 using Terraria.ID;
+using Terraria.Localization;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace GridBlock.Common;
 
@@ -244,5 +246,12 @@ public class GridBlockPlayer : ModPlayer {
                 Player.Hurt(new() { Damage = 5, DamageSource = PlayerDeathReason.LegacyDefault() });
             }
         }
+    }
+
+    public override void OnEnterWorld() {
+        if (Main.netMode != NetmodeID.MultiplayerClient)
+            return;
+
+        Main.NewText(Language.GetTextValue("Mods.GridBlock.MultiplayerWarning"), Color.Red);
     }
 }

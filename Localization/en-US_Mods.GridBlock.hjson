@@ -29,6 +29,7 @@ HoldToUnlock: Hold to unlock!
 Reroll: Reroll ({0})
 RerollObtained: Chunk Reroll obtained ({0})
 SurpriseTrigger: "{0} has triggered [{1}]!"
+MultiplayerWarning: WARNING: GridBlock Multiplayer is unsupported yet! Please restart the world in Singleplayer mode, or your game might explode.
 
 HardmodeMessage: {
 	Title: Hardmode Begins!

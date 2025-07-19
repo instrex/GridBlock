@@ -1,0 +1,25 @@
+[h1]Grid Block![/h1]
+Explore the world where [b]everything is locked by default![/b] Inspired by a popular Minecraft data pack [b]Chunklock,[/b] this mod provides a unique challenge in which you have to get lots of bizarre and unique materials, just to... [i]set foot on the new land?[/i] But listen, I tried making it less tedious and a lot more fun with the help of [b]Surprises [/b]- random occurrences, which could happen when you unlock a chunk! But be careful, some do come with [b]terrible consequences...[/b]
+
+[h1]Features[/h1]
+[list] [*] Enjoy a [b]varied [/b]and [b]sometimes weird[/b] pool of items, required for unlocks!
+[*] If you're feeling stuck, you can [b]reroll any chunk[/b] you don't like!
+[*] Obtain rerolls by [b]defeating bosses[/b] or [b]unlocking more chunks![/b]
+[*] [b]Growing difficulty[/b] to make sure the progress doesn't feel boring!
+[*] [b]40+ funny random occurrences[/b] to experience!
+[/list]
+
+[h1]Links[/h1]
+[list] [*] [url=https://github.com/instrex] GridBlock's GitHub Repository[/url]
+[*] [url=https://youtu.be/nySPMjbFmwk]Watch the GridBlock Mod Trailer [/url] [i](maybe share it with your friends...?)[/i]
+[*] [url=https://ko-fi.com/instrex] Support instrex via Ko-fi[/url]
+[*] [url=https://www.youtube.com/MOLVINE] Check out Molvine [/url] [i](for Russian speakers)[/i]
+[/list]
+
+[h1]Special Thanks[/h1]
+[list] [*] [b]Molvine & his subscribers,[/b] for sharing the idea and supporting development
+[*] Amazing beta-testers: [b]000Magician000, JustFlower & Santanist[/b]
+[*] [b]you,[/b] for playing the mod! :)
+[/list]
+
+[i]NOTE: Multiplayer is, quite sadly, unsupported at the moment. Fell free to contribute to the mod's GitHub directly via the link above!	[/i]
